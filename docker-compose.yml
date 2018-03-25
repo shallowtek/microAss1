@@ -1,0 +1,29 @@
+#Here i describe my four services to be built and their ports.
+#Only web service and twitter service need to expose ports as they are servers. 
+#Redis container handles its own port exposing at 6379. 
+#I could have included here but it is nit necessary
+version: '2'
+
+services:
+ web-service:
+  build: "./WebService"
+  ports:
+   - "8080:8080"
+ twitter-service:
+  build: "./TwitterService"
+  ports:
+   - "10000:10000"
+ bbc-service:
+  build: "./BbcService"
+  ports:
+   - "10005:10005"
+ compute-service:
+  build: ./ComputeService
+  depends_on:
+   - twitter-service
+   - bbc-service
+ redis:
+  image: redis
+
+
+  

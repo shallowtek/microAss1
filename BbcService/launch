@@ -1,0 +1,3 @@
+#!/bin/sh
+export BBC_API_KEY=054871042b774af78e9b5c778ab71dd4
+echo "Launched Exports"
