@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bbc
+spec:
+  containers:
+  - name: bbc
+    image: mattshallow/micro:bbc-v1
+    ports:
+    - containerPort: 10005

@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: web
+spec:
+  containers:
+  - name: web
+    image: mattshallow/micro:web-v1
+    ports:
+    - containerPort: 8080

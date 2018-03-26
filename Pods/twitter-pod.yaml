@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: twitter
+spec:
+  containers:
+  - name: twitter
+    image: mattshallow/micro:twitter-v1
+    ports:
+    - containerPort: 10000
