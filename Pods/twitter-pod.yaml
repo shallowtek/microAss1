@@ -5,6 +5,10 @@ metadata:
 spec:
   containers:
   - name: twitter
-    image: mattshallow/micro:twitter-v1
+    image: index.docker.io/mattshallow/micro:twitter-v1
+    imagePullPolicy: Always
     ports:
     - containerPort: 10000
+  imagePullSecrets:
+    - name: myregistrykey
+  

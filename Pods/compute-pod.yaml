@@ -5,4 +5,8 @@ metadata:
 spec:
   containers:
   - name: compute
-    image: mattshallow/micro:compute-v1
+    image: index.docker.io/mattshallow/micro:compute-v1
+    imagePullPolicy: Always
+    
+  imagePullSecrets:
+    - name: myregistrykey

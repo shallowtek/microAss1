@@ -5,6 +5,10 @@ metadata:
 spec:
   containers:
   - name: web
-    image: mattshallow/micro:web-v1
+    image: index.docker.io/mattshallow/micro:web-v1
+    imagePullPolicy: Always
     ports:
     - containerPort: 8080
+  imagePullSecrets:
+    - name: myregistrykey
+  

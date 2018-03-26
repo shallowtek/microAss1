@@ -5,6 +5,10 @@ metadata:
 spec:
   containers:
   - name: bbc
-    image: mattshallow/micro:bbc-v1
+    image: index.docker.io/mattshallow/micro:bbc-v1
+    imagePullPolicy: Always
     ports:
     - containerPort: 10005
+  imagePullSecrets:
+    - name: myregistrykey
+  
