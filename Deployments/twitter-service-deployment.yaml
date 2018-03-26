@@ -1,0 +1,27 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml
+    kompose.version: 1.10.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: twitter-service
+  name: twitter-service
+spec:
+  replicas: 3
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: twitter-service
+    spec:
+      containers:
+      - image: twitter-service
+        name: twitter-service
+        ports:
+        - containerPort: 10000
+        resources: {}
+      restartPolicy: Always
+status: {}
