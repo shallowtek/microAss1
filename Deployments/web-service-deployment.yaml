@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -28,3 +29,32 @@ spec:
       imagePullSecrets:
       - name: myregistrykey
 status: {}
+=======
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml
+    kompose.version: 1.10.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: web-service
+  name: web-service
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: web-service
+    spec:
+      containers:
+      - image: web-service
+        name: web-service
+        ports:
+        - containerPort: 8080
+        resources: {}
+      restartPolicy: Always
+status: {}
+>>>>>>> 4141e30bc3bae755a0acf3015f492dc475fbc6bb
