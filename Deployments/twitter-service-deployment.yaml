@@ -18,10 +18,13 @@ spec:
         io.kompose.service: twitter-service
     spec:
       containers:
-      - image: twitter-service
+      - image: index.docker.io/mattshallow/micro:twitter-v1
+        imagePullPolicy: Always
         name: twitter-service
         ports:
         - containerPort: 10000
         resources: {}
       restartPolicy: Always
+      imagePullSecrets:
+      - name: myregistrykey
 status: {}

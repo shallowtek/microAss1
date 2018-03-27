@@ -18,10 +18,13 @@ spec:
         io.kompose.service: bbc-service
     spec:
       containers:
-      - image: bbc-service
+      - image: index.docker.io/mattshallow/micro:bbc-v1
+        imagePullPolicy: Always
         name: bbc-service
         ports:
         - containerPort: 10005
         resources: {}
       restartPolicy: Always
+      imagePullSecrets:
+      - name: myregistrykey
 status: {}

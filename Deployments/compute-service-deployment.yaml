@@ -9,7 +9,7 @@ metadata:
     io.kompose.service: compute-service
   name: compute-service
 spec:
-  replicas: 3
+  replicas: 1
   strategy: {}
   template:
     metadata:
@@ -18,8 +18,11 @@ spec:
         io.kompose.service: compute-service
     spec:
       containers:
-      - image: compute-service
+      - image: index.docker.io/mattshallow/micro:compute-v1
+        imagePullPolicy: Always
         name: compute-service
         resources: {}
       restartPolicy: Always
+      imagePullSecrets:
+      - name: myregistrykey
 status: {}
