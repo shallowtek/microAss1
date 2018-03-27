@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: web
+spec:
+  containers:
+  - name: web
+    image: index.docker.io/mattshallow/micro:web-v1
+    imagePullPolicy: Always
+    ports:
+    - containerPort: 8080
+  imagePullSecrets:
+    - name: myregistrykey
+  

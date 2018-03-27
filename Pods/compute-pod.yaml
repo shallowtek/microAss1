@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: compute
+spec:
+  containers:
+  - name: compute
+    image: index.docker.io/mattshallow/micro:compute-v1
+    imagePullPolicy: Always
+    
+  imagePullSecrets:
+    - name: myregistrykey
