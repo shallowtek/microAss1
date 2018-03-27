@@ -10,9 +10,12 @@ COPY . .
 #get all the imports and install
 run go get -d -v ./...
 
+EXPOSE 9090
+
 #build the go file
 RUN go build computeService.go
 
 #start the service
 ENTRYPOINT ["/ComputeService/computeService"]
+
 

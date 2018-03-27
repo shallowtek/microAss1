@@ -8,6 +8,8 @@ import (
     "fmt"
     "log"
     "net/http"
+    "text/template"
+    "net/url"
 
 	
 )
@@ -16,8 +18,20 @@ var bbcScore = ""
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	
-    fmt.Fprintf(w, "This is the Home")
-	
+    fmt.Println("method:", r.Method) //get request method
+    if r.Method == "GET" {
+        t, _ := template.ParseFiles("form.html")
+        t.Execute(w, nil)
+    } else {
+        r.ParseForm()
+
+	term := string(r.FormValue("Search Term"))
+        time := string(r.FormValue("Search Time"))
+	choice := string(r.FormValue("Choice"))
+	http.PostForm("http://compute-service:9090/start", url.Values{"term": {term}, "time": {time}, "choice": {choice}})
+
+    }
+		
 }
 
 func handlerScore(w http.ResponseWriter, r *http.Request) {

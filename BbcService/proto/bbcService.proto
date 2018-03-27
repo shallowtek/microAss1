@@ -33,7 +33,8 @@ service BbcService {
 
 // The request message containing the user's name.
 message NewsRequest {
-  string minutes = 1;
+  string name = 1;
+  string minutes = 2;
   
 }
 

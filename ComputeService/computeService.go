@@ -7,8 +7,7 @@ import (
 	"log"
 	"fmt"
 	"time"
-	"math"
-	"os"	
+	"math"	
 	"strconv"
 	"net/http"
 	"golang.org/x/net/context"
@@ -43,7 +42,6 @@ var (
 	*/
 	start time.Time
 	end time.Time
-	
 	val string
 	bbcVal string
 )
@@ -213,36 +211,73 @@ func printNews(client bs.BbcServiceClient, in *bs.NewsRequest) string{
 	
 }
 
-func f(data interface{}){
 
 
 
+func startTwitter(term, time, opts){
 
-}
-func sendToWebService(val string){
+	conn, err := grpc.Dial("twitter-service:10000", opts... )
+	if err != nil {
+		log.Fatalf("fail to dial: %v", err)
+	}
+	defer conn.Close()
 
-}
+	client := ts.NewTwitterServiceClient(conn)
 
-func main() {
-
-	//select the search term and how long to run search for
-	word := "trump"
-	mins := "1"
-
-	
-	//Create a new redis client by connecting to the redis container launched with docker-compose
-	rClient = redis.NewClient(&redis.Options{
-	
-		Addr: "redis:6379",
+	val = printFeatures(client, &ts.TweetsRequest{
+		Name: term,
+		Minutes: time,
 		
 	})
 
-	//If you want to do a second search its good to flush previous data on Redis
-	rClient.FlushAll()
+	fmt.Println("This is Val: " + val + "\n")
+	
+	conn.Close()
+
+	_, errs := http.Get("http://web-service:8080/submitTwit/" + val)
+	
+	if errs != nil {
+		log.Fatalf("fail to submit value twitter: %v", errs)
+	}
+	
+
+
+
+}
+
+func startBbc(term, time, opts){
+
+	conn, err := grpc.Dial("bbc-service:10005", opts... )
+	if err != nil {
+		log.Fatalf("fail to dial: %v", err)
+	}
+	defer conn.Close()
+
+	clientBbc := bs.NewBbcServiceClient(conn)
+
+	bbcVal = printNews(clientBbc, &bs.NewsRequest{
+		Name: term,
+		Minutes: time,
+		
+	})	
+	
+	fmt.Println("This is BBC Val: " + bbcVal + "\n")	
+	conn.Close()
+
+	_, errs = http.Get("http://web-service:8080/submitBbc/" + bbcVal)
+	
+	if errs != nil {
+		log.Fatalf("fail to submit value bbc: %v", errs)
+	}
+}
+
+
+
+
+func handler(w http.ResponseWriter, r *http.Request) {
 	
 	flag.Parse()
 	
-	//This part is not really necessary and will work without it but it is recommended for more secure connections
 	var opts []grpc.DialOption
 	if *tls {
 		if *caFile == "" {
@@ -256,73 +291,52 @@ func main() {
 	} else {
 		opts = append(opts, grpc.WithInsecure())
 	}
+    
+        r.ParseForm()
+        
+	term := r.FormValue("term")
+	time := r.FormValue("time")
+	choice := r.FormValue("choice")
+	//choice = r.Form["Search Choice"]
+
+	if choice == "Twitter"{
+
+	startTwitter(term, time, opts)
 	
-	//dial twiiter service container at port 10000 using grpc.Dial
-	conn, err := grpc.Dial("twitter-service:10000", opts... )
-	if err != nil {
-		log.Fatalf("fail to dial: %v", err)
+	}else if choice == "Bbc"{
+
+	startBbc(term, time, opts)
+
 	}
-	defer conn.Close()
+	
+}
 
-	//create a new twitter service client after successful grpc dial 
-	client := ts.NewTwitterServiceClient(conn)
+func main() {
 
-	//dial bbc service container at port 10005 using grpc.Dial
-	conn3, err := grpc.Dial("bbc-service:10005", opts... )
-	if err != nil {
-		log.Fatalf("fail to dial: %v", err)
-	}
-	defer conn3.Close()
-
-	//create a new twitter service client after successful grpc dial 
-	clientBbc := bs.NewBbcServiceClient(conn3)
 
 	
 
-	/*
-	call this function passing in the client and tweet request struct with its set variables (trump and 1 min)
-	grpc has no clean way of stopping a server stream client side so I use the passed in variable "Minutes" to set
-	how long the stream will last on the server side.
-	*/
+	//select the search term and how long to run search for
+	//word := "trump"
+	//mins := "1"
 
-	val = printFeatures(client, &ts.TweetsRequest{
-		Name: word,
-		Minutes: mins,
+	
+	//Create a new redis client by connecting to the redis container launched with docker-compose
+	rClient = redis.NewClient(&redis.Options{
+	
+		Addr: "redis:6379",
 		
 	})
 
-	fmt.Println("This is Val: " + val + "\n")
+	//If you want to do a second search its good to flush previous data on Redis
+	rClient.FlushAll()
 	
-	conn.Close()
 
 
-	bbcVal = printNews(clientBbc, &bs.NewsRequest{
-		Minutes: mins,
-		
-	})	
-	//printing val to test output from twitter service and make sure stream works	
 	
-	fmt.Println("This is BBC Val: " + bbcVal + "\n")	
-	conn3.Close()
+	http.HandleFunc("/start", handler)	
+    	log.Fatal(http.ListenAndServe(":9090", nil))
 	
-	//Here I am send the value to the web service using a get request. It is sent to the submit pages and the resul
-	//can be viewed on the localhost:8080/score page
-	resp, errs := http.Get("http://web-service:8080/submitTwit/" + val)
 	
-	if errs != nil {
-		log.Fatalf("fail to submit value twitter: %v", errs)
-	}
 	
-	fmt.Println(resp)
-
-	_, errs = http.Get("http://web-service:8080/submitBbc/" + bbcVal)
-	
-	if errs != nil {
-		log.Fatalf("fail to submit value bbc: %v", errs)
-	}
-	
-	//fmt.Println(resp)
-	//fmt.Println(errs)
-	
-	os.Exit(3)
 }

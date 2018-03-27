@@ -19,6 +19,8 @@ services:
    - "10005:10005"
  compute-service:
   build: ./ComputeService
+  ports:
+   - "9090:9090"
   depends_on:
    - twitter-service
    - bbc-service

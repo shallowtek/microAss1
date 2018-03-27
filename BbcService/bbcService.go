@@ -69,7 +69,7 @@ and a return stream variable is created.
 func (s *BbcServiceServer) GetNews(in *ts.NewsRequest, stream ts.BbcService_GetNewsServer) error {
 		
 	var newsResults news
-	url := "https://newsapi.org/v2/everything?q=trump&apiKey="+NEWS_API_KEY
+	url := "https://newsapi.org/v2/everything?q="+in.Name+"&apiKey="+NEWS_API_KEY
 	resp, _ := http.Get(url)
 	bytes, _ := ioutil.ReadAll(resp.Body)
 
@@ -97,38 +97,7 @@ func (s *BbcServiceServer) GetNews(in *ts.NewsRequest, stream ts.BbcService_GetN
 
 	fmt.Println("Stopping Stream...")
 	return nil	
-	
-	/*
-	Same go routine in function above for calculating length stream should last
-	*/
-	/*
-	go func(){
-		f,_ := strconv.ParseFloat(in.Minutes, 64)
-		dur := f * 60
-		start := time.Now()
-		rounded = 0
-
-	 for rounded <= dur{
-		end := time.Now()
-
-		elapsed := end.Sub(start).Seconds()
-		rounded = math.Floor(elapsed)
-	}
-
-	
-	
-	return 
-	
-	}()*/
-	
-	/*
-	// I can also cancel the stream using CTRL+C which is handy for testing
-	ch := make(chan os.Signal)
-	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
-	log.Println(<-ch)
-
-	*/
-	
+		
 	
 }
 
