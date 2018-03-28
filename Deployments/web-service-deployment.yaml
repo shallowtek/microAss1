@@ -18,7 +18,7 @@ spec:
         io.kompose.service: web-service
     spec:
       containers:
-      - image: web-v1
+      - image: gcr.io/microassignment-199111/github-shallowtek-microass1:web-v2
         imagePullPolicy: Always
         name: web-service
         ports:

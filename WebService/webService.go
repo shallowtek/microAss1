@@ -28,7 +28,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	term := string(r.FormValue("Search Term"))
         time := string(r.FormValue("Search Time"))
 	choice := string(r.FormValue("Choice"))
-	http.PostForm("http://compute-service:9090/start", url.Values{"term": {term}, "time": {time}, "choice": {choice}})
+	resp, _ := http.PostForm("http://compute-service:9090/start", url.Values{"term": {term}, "time": {time}, "choice": {choice}})
+	defer resp.Body.Close()
 	http.Redirect(w, r, "/home", http.StatusSeeOther)
 
     }
