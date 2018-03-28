@@ -1,33 +1,3 @@
-<<<<<<< HEAD
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  annotations:
-    kompose.cmd: kompose convert -f docker-compose.yml
-    kompose.version: 1.10.0 (HEAD)
-  creationTimestamp: null
-  labels:
-    io.kompose.service: compute-service
-  name: compute-service
-spec:
-  replicas: 1
-  strategy: {}
-  template:
-    metadata:
-      creationTimestamp: null
-      labels:
-        io.kompose.service: compute-service
-    spec:
-      containers:
-      - image: index.docker.io/mattshallow/micro:compute-v1
-        imagePullPolicy: Always
-        name: compute-service
-        resources: {}
-      restartPolicy: Always
-      imagePullSecrets:
-      - name: myregistrykey
-status: {}
-=======
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -48,9 +18,12 @@ spec:
         io.kompose.service: compute-service
     spec:
       containers:
-      - image: compute-service
+      - image: index.docker.io/mattshallow/micro:compute-v1
         name: compute-service
+        ports:
+        - containerPort: 9090
         resources: {}
       restartPolicy: Always
+      imagePullSecrets:
+      - name: myregistrykey
 status: {}
->>>>>>> 4141e30bc3bae755a0acf3015f492dc475fbc6bb
