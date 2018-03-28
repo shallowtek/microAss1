@@ -18,14 +18,11 @@ spec:
         io.kompose.service: web-service
     spec:
       containers:
-      - image: index.docker.io/mattshallow/micro:web-v1
+      - image: web-v1
         imagePullPolicy: Always
         name: web-service
         ports:
         - containerPort: 8080
         resources: {}
-      restartPolicy: Always
-      imagePullSecrets:
-      - name: myregistrykey
 status: {}
 
