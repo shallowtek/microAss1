@@ -9,7 +9,7 @@ metadata:
     io.kompose.service: web-service
   name: web-service
 spec:
-  replicas: 1
+  replicas: 3
   strategy: {}
   template:
     metadata:
