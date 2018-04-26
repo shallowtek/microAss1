@@ -10,14 +10,27 @@ import (
     "net/http"
     "text/template"
     "net/url"
-
+    //generate unique ID
+	//"github.com/segmentio/ksuid"
 	
 )
+
 var twitScore = ""
 var bbcScore = ""
 
+
+
+//func genKsuid() string{
+//	id = ksuid.New().String()
+//	//fmt.Printf("github.com/segmentio/ksuid:  %s\n", id.String())
+//	return id
+//}
+
+
 func handler(w http.ResponseWriter, r *http.Request) {
 	
+	
+    
     fmt.Println("method:", r.Method) //get request method
     if r.Method == "GET" {
         t, _ := template.ParseFiles("form.html")
@@ -26,8 +39,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
         r.ParseForm()
 
 	term := string(r.FormValue("Search Term"))
-        time := string(r.FormValue("Search Time"))
+    time := string(r.FormValue("Search Time"))
 	choice := string(r.FormValue("Choice"))
+	
 	resp, _ := http.PostForm("http://compute-service:9090/start", url.Values{"term": {term}, "time": {time}, "choice": {choice}})
 	defer resp.Body.Close()
 	http.Redirect(w, r, "/home", http.StatusSeeOther)
@@ -38,18 +52,46 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 func handlerScore(w http.ResponseWriter, r *http.Request) {
 	
-    fmt.Fprintf(w, "This is the Twitter Sentiment score: %s \n", twitScore)
+	var cookieBbc, err = r.Cookie("bbc")
+	
+    if err == nil {
+    	
+        var cookievalueBbc = cookieBbc.Value
+        fmt.Fprintf(w, "This is the Bbc Sentiment score: %s", cookievalueBbc)
+        
+    }else{
+    	
+    	fmt.Fprintf(w, "No Bbc Score")
+    	
+    }
+    
+    var cookieTwit, err = r.Cookie("twit")
+	
+    if err == nil {
+    	
+        var cookievalueTwit = cookieTwit.Value
+        fmt.Fprintf(w, "This is the Twitter Sentiment score: %s", cookievalueTwit)
+    }else{
+    	
+    	fmt.Fprintf(w, "No Twitter Score")
+    	
+    }
+	
+    
 
-    fmt.Fprintf(w, "This is the Bbc Sentiment score: %s", bbcScore)
+    
 }
 
 func handlerSubmitTwit(w http.ResponseWriter, r *http.Request) {
+	
 	twitScore = r.URL.Path[12:]
+	cookie := http.Cookie{Name: "twit", Value: twitScore}	
     fmt.Fprintf(w, "You have submiited new twitter score")
 }
 
 func handlerSubmitBbc(w http.ResponseWriter, r *http.Request) {
 	bbcScore = r.URL.Path[11:]
+	cookie := http.Cookie{Name: "bbc", Value: bbcScore}
     fmt.Fprintf(w, "You have submiited new bbc score")
 }
 

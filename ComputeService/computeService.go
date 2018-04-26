@@ -19,6 +19,8 @@ import (
 	"github.com/cdipaolo/sentiment"
 	"github.com/go-redis/redis"
 	
+
+	
 )
 
 var (
@@ -77,8 +79,8 @@ func printFeatures(client ts.TwitterServiceClient, in *ts.TweetsRequest) string{
 		average = (float64)(score)/(float64)(count)		
 				
 		fmt.Printf("SCORE %d %d %6.1f \n",score, count,average)
-			
-		err = rClient.Set("Score", average, 0).Err()
+		
+		err = rClient.Set("twitScore", average, 0).Err()
 
 		if err != nil {
 			panic(err)
@@ -86,7 +88,7 @@ func printFeatures(client ts.TwitterServiceClient, in *ts.TweetsRequest) string{
 	}
 
 	fmt.Println("pulling from redis")
-		val, err := rClient.Get("Score").Result()
+		val, err := rClient.Get("twitScore").Result()
 
 		if err != nil {
 			panic(err)
@@ -141,13 +143,13 @@ func printNews(client bs.BbcServiceClient, in *bs.NewsRequest) string{
 				
 		fmt.Printf("SCORE %d %d %6.1f \n",score, count,average)
 			
-		rClient.Set("Score2", average, 0)
+		rClient.Set("bbcScore", average, 0)
 
 				
 	}
 
 	fmt.Println("pulling from redis")
-		val, _ := rClient.Get("Score2").Result()
+		val, _ := rClient.Get("bbcScore").Result()
 
 		
 	return val 
@@ -239,6 +241,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	term := r.FormValue("term")
 	timeN := r.FormValue("time")
 	choice := r.FormValue("choice")
+	//id := r.FormValue("id")
 
 	if choice == "Twitter"{
 
