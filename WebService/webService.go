@@ -52,9 +52,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 func handlerScore(w http.ResponseWriter, r *http.Request) {
 	
-	var cookieBbc, err = r.Cookie("bbc")
+	var cookieBbc, errOne = r.Cookie("bbc")
 	
-    if err == nil {
+    if errOne == nil {
     	
         var cookievalueBbc = cookieBbc.Value
         fmt.Fprintf(w, "This is the Bbc Sentiment score: %s", cookievalueBbc)
@@ -65,9 +65,9 @@ func handlerScore(w http.ResponseWriter, r *http.Request) {
     	
     }
     
-    var cookieTwit, err = r.Cookie("twit")
+    var cookieTwit, errTwo = r.Cookie("twit")
 	
-    if err == nil {
+    if errTwo == nil {
     	
         var cookievalueTwit = cookieTwit.Value
         fmt.Fprintf(w, "This is the Twitter Sentiment score: %s", cookievalueTwit)
@@ -78,21 +78,21 @@ func handlerScore(w http.ResponseWriter, r *http.Request) {
     }
 	
     
-
-    
 }
 
 func handlerSubmitTwit(w http.ResponseWriter, r *http.Request) {
 	
 	twitScore = r.URL.Path[12:]
-	cookie := http.Cookie{Name: "twit", Value: twitScore}	
-    fmt.Fprintf(w, "You have submiited new twitter score")
+	cookie := http.Cookie{Name: "twit", Value: twitScore}
+	http.SetCookie(w, &cookie)
+    fmt.Fprintf(w, "You have submiited new twitter score", cookie)
 }
 
 func handlerSubmitBbc(w http.ResponseWriter, r *http.Request) {
 	bbcScore = r.URL.Path[11:]
 	cookie := http.Cookie{Name: "bbc", Value: bbcScore}
-    fmt.Fprintf(w, "You have submiited new bbc score")
+	http.SetCookie(w, &cookie)
+    fmt.Fprintf(w, "You have submiited new bbc score", cookie)
 }
 
 
@@ -105,10 +105,6 @@ func main() {
 	http.HandleFunc("/submitBbc/", handlerSubmitBbc)
 	
     	log.Fatal(http.ListenAndServe(":8080", nil))
-
-
-
-	
 
 	
     	
