@@ -46,7 +46,7 @@ func (s *RedisGatewayServer) getData(ctx context.Context, in *rs.KeyRequest) (*r
 	defer conn.Close()
 	val, _ := conn.Do("GET", in.Key)
 	stringVal := val.(string)
-	return &rs.DataReply{in.Key, stringVal}, nil
+	return &rs.DataReply{Key: in.Key, Value: stringVal}, nil
 	
 
 	
@@ -75,8 +75,8 @@ func main() {
 	        log.Fatalf("failed to listen: %v", err)
 	}
 	grpcServer := grpc.NewServer()
-	newServer := rs.RedisGatewayServer
-	rs.RegisterRedisGatewayServer(grpcServer, newServer)
+	//newServer := &RedisGatewayServer{}
+	rs.RegisterRedisGatewayServer(grpcServer, &RedisGatewayServer)
 	grpcServer.Serve(lis)
 	
 	

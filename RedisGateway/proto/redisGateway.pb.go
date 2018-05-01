@@ -27,9 +27,6 @@ const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 type KeyRequest struct {
 	Key                  string   `protobuf:"bytes,1,opt,name=key" json:"key,omitempty"`
 	Value                string   `protobuf:"bytes,2,opt,name=Value,json=value" json:"Value,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
 }
 
 func (m *KeyRequest) Reset()         { *m = KeyRequest{} }
@@ -71,9 +68,7 @@ func (m *KeyRequest) GetValue() string {
 }
 
 type Empty struct {
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+
 }
 
 func (m *Empty) Reset()         { *m = Empty{} }
@@ -104,9 +99,7 @@ var xxx_messageInfo_Empty proto.InternalMessageInfo
 type DataReply struct {
 	Key                  string   `protobuf:"bytes,1,opt,name=key" json:"key,omitempty"`
 	Value                string   `protobuf:"bytes,2,opt,name=value" json:"value,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+
 }
 
 func (m *DataReply) Reset()         { *m = DataReply{} }
