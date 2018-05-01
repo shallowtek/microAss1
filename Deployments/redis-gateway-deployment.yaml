@@ -1,0 +1,19 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: redis-gateway
+  name: redis-gateway
+spec:
+  replicas: 3
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        io.kompose.service: redis-gateway
+    spec:
+      containers:
+      - image: gcr.io/microassignment-199111/redis-gateway:v1
+        name: redis-gateway
+        ports:
+        - containerPort: 10010

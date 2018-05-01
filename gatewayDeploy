@@ -1,0 +1,14 @@
+#! /bin/bash
+kubectl delete services redis-gateway
+
+kubectl delete deployments redis-gateway
+
+docker build -t redis-gateway RedisGateway
+
+docker tag redis-gateway gcr.io/microassignment-199111/redis-gateway:v1
+
+docker push gcr.io/microassignment-199111/redis-gateway:v1
+
+kubectl create -f Deployments/redis-gateway-deployment.yaml
+
+kubectl create -f Services/redis-gateway-service.yaml

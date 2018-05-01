@@ -4,26 +4,25 @@ package main
 import (
 	
 		"flag"
-	"fmt"
+	
 	"log"
 	//"os"
 	"net"
-	"time"
+	
 	//"math"
 	//"os/signal"
 	//"syscall"
 	//"strconv"
-	"net/http"
-	"io/ioutil"
-	"encoding/json"
+	
+
 	//"bufio"
-	//"context"
+	"golang.org/x/net/context"
 	
 	//"strconv"
 	rs "github.com/shallowtek/microAss1/RedisGateway/proto"
-	"google.golang.org/grpc/credentials"
+
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/testdata"
+
 	"github.com/gomodule/redigo/redis"
 
 	
@@ -39,29 +38,30 @@ var(
 
 type RedisGatewayServer struct {}
 
-func (s *RedisGatewayServer) getData(in *rs.keyRequest, reply rs.RedisGateway_GetDataServer) error {
+//, reply rs.RedisGateway_GetDataServer
+func (s *RedisGatewayServer) getData(ctx context.Context, in *rs.KeyRequest) (*rs.DataReply, error) {
 				
 	//set to redis service
 	conn, _ := redis.Dial("tcp", "redis:6379")
 	defer conn.Close()
-	val, _ := conn.Do("GET", in.Name)
-	
-	return &rs.reply{in.Name, val}, nil
+	val, _ := conn.Do("GET", in.Key)
+	stringVal := val.(string)
+	return &rs.DataReply{in.Key, stringVal}, nil
 	
 
 	
 }
 
 
-func (s *RedisGatewayServer) setData(in *rs.keyRequest, reply rs.RedisGateway_GetDataServer) error {
+func (s *RedisGatewayServer) setData(ctx context.Context, in *rs.KeyRequest) (*rs.Empty, error) {
 				
 	//set to redis service
 	conn, _ := redis.Dial("tcp", "redis:6379")
 	defer conn.Close()		
 	//convertAvg := strconv.FormatFloat(average, 'f', 6, 64)	
-	conn.Do("SET", in.Name, in.Value)
+	conn.Do("SET", in.Key, in.Value)
 	
-	return &rs.reply{}, nil
+	return &rs.Empty{}, nil
 	
 }
 
@@ -75,8 +75,8 @@ func main() {
 	        log.Fatalf("failed to listen: %v", err)
 	}
 	grpcServer := grpc.NewServer()
-	rs.RegisterRedisGatewayServer(grpcServer, &RedisGatewayServer{})
-	... // determine whether to use TLS
+	newServer := rs.RedisGatewayServer
+	rs.RegisterRedisGatewayServer(grpcServer, newServer)
 	grpcServer.Serve(lis)
 	
 	
