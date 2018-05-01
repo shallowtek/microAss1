@@ -10,11 +10,10 @@ metadata:
   name: web-service
 spec:
   ports:
-  - name: "8080"
-    port: 8080
-    targetPort: 8080
+   - name: "8080"
+     port: 8080
+    
   selector:
     io.kompose.service: web-service
   type: LoadBalancer
-status:
-  loadBalancer: {}
+

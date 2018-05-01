@@ -1,0 +1,50 @@
+// Copyright 2015 gRPC authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+////protoc -I proto/ proto/redisGateway.proto --go_out=plugins=grpc:proto
+
+
+
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.MattShallow.microAss1.redisGateway";
+option java_outer_classname = "RedisGatewayProto";
+
+package redisGateway;
+
+
+service redisGateway {
+  
+  rpc getData (KeyRequest) returns (DataReply) {}
+
+  rpc setData (KeyRequest) returns (Empty) {}
+  
+}
+
+// The request message containing the user's name.
+message KeyRequest {
+  string key = 1;
+  string Value = 2;
+  
+}
+
+message Empty {
+
+}
+
+// The response message containing the greetings
+message DataReply {
+  string key = 1;
+  string value = 2;
+}

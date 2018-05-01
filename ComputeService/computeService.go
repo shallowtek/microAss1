@@ -16,8 +16,12 @@ import (
 	"google.golang.org/grpc/testdata"
 	ts "github.com/shallowtek/microAss1/TwitterService/proto"
 	bs "github.com/shallowtek/microAss1/BbcService/proto"
+	rs "github.com/shallowtek/microAss1/RedisGateway/proto"
 	"github.com/cdipaolo/sentiment"
-	"github.com/go-redis/redis"
+	//"github.com/go-redis/redis"
+	//"github.com/gomodule/redigo/redis"
+	//"encoding/json"
+    //"github.com/gorilla/mux"
 	
 
 	
@@ -27,16 +31,43 @@ var (
 	tls                = flag.Bool("tls", false, "Connection uses TLS if true, else plain TCP")
 	caFile             = flag.String("ca_file", "", "The file containning the CA root cert file")
 	serverHostOverride = flag.String("server_host_override", "x.test.youtube.com", "The server name use to verify the hostname returned by TLS handshake")
-	rClient *redis.Client
+	//rClient *redis.Client
 	start time.Time
 	end time.Time
 	val string
 	bbcVal string
+	id string
+//	twitName string
+//	bbcName string
+	
+	
+	//conn redis.Conn
+
 )
+
+//type Result struct {
+//    Value string `json:"value"`   
+//}
+
+
+// Display a single data
+//func GetResult(w http.ResponseWriter, r *http.Request) {
+//    params := mux.Vars(r)
+//    key := params["key"] 
+//    
+//    conn, _ := redis.Dial("tcp", "redis:6379")
+//	defer conn.Close()
+//	
+//    val, _:= conn.Do("GET", key)
+//    result := Result{Value: val.(string)}
+//    	
+//    json.NewEncoder(w).Encode(result)
+//    return
+//}
 
 //This function is called by the startTwitter function. It contains the GRPC communication method to communicate with the
 //twitter service. A stream is returned and sentiment calculated and stored on redis.
-func printFeatures(client ts.TwitterServiceClient, in *ts.TweetsRequest) string{
+func printFeatures(client ts.TwitterServiceClient, in *ts.TweetsRequest){
 	score := 0
 	count := 0
 	var elapsed float64
@@ -78,38 +109,34 @@ func printFeatures(client ts.TwitterServiceClient, in *ts.TweetsRequest) string{
 		count++
 		average = (float64)(score)/(float64)(count)		
 				
-		fmt.Printf("SCORE %d %d %6.1f \n",score, count,average)
+		fmt.Printf("SCORE %d %d %6.1f \n",score, count, average)		
 		
-		err = rClient.Set("twitScore", average, 0).Err()
-
-		if err != nil {
-			panic(err)
-		}		
+		
+	}//end for loop	
+	
+	conn, err := grpc.Dial("redis-gateway:10010", opts... )
+	if err != nil {
+		log.Fatalf("fail to dial: %v", err)
 	}
-
-	fmt.Println("pulling from redis")
-		val, err := rClient.Get("twitScore").Result()
-
-		if err != nil {
-			panic(err)
-		}
-
-
-	return val 
+	defer conn.Close()
+	convertAvg := strconv.FormatFloat(average, 'f', 6, 64)
+	client := rs.NewRedisGatewayClient(conn)
+	feature, _ := client.SetData(context.Background(), &rs.KeyRequest{in.Name, convertAvg})
 	
 	
-}
+	
+}//end function
 //This function is called by the startBbc function. It contains the GRPC communication method to communicate with the
 //bbc service. A stream is returned and sentiment calculated and stored on redis.
-func printNews(client bs.BbcServiceClient, in *bs.NewsRequest) string{
+func printNews(client bs.BbcServiceClient, in *bs.NewsRequest){
 	score := 0
 	count := 0
 	var elapsed float64
 	var rounded float64
 	average := 0.0
 
-	model, err := sentiment.Restore()
-
+	model, err := sentiment.Restore()		
+		
 	if err != nil {
     	panic(fmt.Sprintf("Could not restore model!\n\t%v\n", err))
 	}
@@ -139,25 +166,28 @@ func printNews(client bs.BbcServiceClient, in *bs.NewsRequest) string{
 		analysis := model.SentimentAnalysis(news.Text, sentiment.English)
 		score += int(analysis.Score)
 		count++
-		average = (float64)(score)/(float64)(count)		
-				
-		fmt.Printf("SCORE %d %d %6.1f \n",score, count,average)
-			
-		rClient.Set("bbcScore", average, 0)
-
-				
-	}
-
-	fmt.Println("pulling from redis")
-		val, _ := rClient.Get("bbcScore").Result()
+		average = (float64)(score)/(float64)(count)	
+		
+		fmt.Printf("SCORE %d %d %6.1f \n",score, count, average)
 
 		
-	return val 
+				
+	}//end for loop
+
+	conn, err := grpc.Dial("redis-gateway:10010", opts... )
+	if err != nil {
+		log.Fatalf("fail to dial: %v", err)
+	}
+	defer conn.Close()
+    convertAvg := strconv.FormatFloat(average, 'f', 6, 64)
+	client := rs.NewRedisGatewayClient(conn)
+	feature, _ := client.SetData(context.Background(), &rs.KeyRequest{in.Name, convertAvg})
 	
+
+	
+			
 	
 }
-
-
 
 //This function starts the twitter stream using the form data. A connection is made to Twitter service and the print features function 
 //is called. A value is returned and sent to the web service to be displayed.
@@ -171,21 +201,13 @@ func startTwitter(term string, timeN string, opts []grpc.DialOption){
 
 	client := ts.NewTwitterServiceClient(conn)
 
-	val = printFeatures(client, &ts.TweetsRequest{
+		printFeatures(client, &ts.TweetsRequest{
 		Name: term,
 		Minutes: timeN,
 		
 	})
 
-	fmt.Println("This is Val: " + val + "\n")
-	
-	conn.Close()
 
-	_, errs := http.Get("http://web-service:8080/submitTwit/" + val)
-	
-	if errs != nil {
-		log.Fatalf("fail to submit value twitter: %v", errs)
-	}
 }
 
 //This function starts the bbc stream using the form data. A connection is made to bbc service and the print news function 
@@ -200,25 +222,18 @@ func startBbc(term string, timeN string, opts []grpc.DialOption){
 
 	clientBbc := bs.NewBbcServiceClient(conn)
 
-	bbcVal = printNews(clientBbc, &bs.NewsRequest{
+		printNews(clientBbc, &bs.NewsRequest{
 		Name: term,
 		Minutes: timeN,
 		
 	})	
 	
-	fmt.Println("This is BBC Val: " + bbcVal + "\n")	
-	conn.Close()
-
-	_, errs := http.Get("http://web-service:8080/submitBbc/" + bbcVal)
-	
-	if errs != nil {
-		log.Fatalf("fail to submit value bbc: %v", errs)
-	}
 }
 
 //This function handles the post request from web-service. It extracts the form data and determines which service to use (twitter or bbc)
 //Extracted data is the search term and how long you want to search for
 func handler(w http.ResponseWriter, r *http.Request) {
+	
 	
 	flag.Parse()
 	
@@ -241,8 +256,10 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	term := r.FormValue("term")
 	timeN := r.FormValue("time")
 	choice := r.FormValue("choice")
-	//id := r.FormValue("id")
+	uniqueKey := r.FormValue("uniqueKey")
 
+	id = uniqueKey
+	
 	if choice == "Twitter"{
 
 	startTwitter(term, timeN, opts)
@@ -255,17 +272,21 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	
 }
 
+
+
+
 func main() {
-
-
-	rClient = redis.NewClient(&redis.Options{	
-		Addr: "redis:6379",		
-	})
-
-	rClient.FlushAll()
+	
+//	router := mux.NewRouter()
+	//router.HandleFunc("/result/{key}", GetResult).Methods("GET")
+    //router.HandleFunc("/results/{key}", GetResults).Methods("GET")
 		
-	http.HandleFunc("/start", handler)	
-    	log.Fatal(http.ListenAndServe(":9090", nil))
+//	router.HandleFunc("/start", handler).Methods("GET")	
+//    log.Fatal(http.ListenAndServe(":9090", router))
+    
+    http.HandleFunc("/start", handler)
+	
+	log.Fatal(http.ListenAndServe(":9090", nil))
 	
 	
 	
