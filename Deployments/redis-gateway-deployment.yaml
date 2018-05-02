@@ -6,7 +6,6 @@ metadata:
   name: redis-gateway
 spec:
   replicas: 3
-  strategy: {}
   template:
     metadata:
       labels:

@@ -3,28 +3,18 @@ package main
 
 import (
 	
-		"flag"
+	"flag"
 	
 	"log"
 	//"os"
-	"net"
-	
-	//"math"
-	//"os/signal"
-	//"syscall"
-	//"strconv"
-	
-
-	//"bufio"
+	"net/http"
 	"golang.org/x/net/context"
 	
 	//"strconv"
 	rs "github.com/shallowtek/microAss1/RedisGateway/proto"
 
 	"google.golang.org/grpc"
-
 	"github.com/gomodule/redigo/redis"
-
 	
 )
 
@@ -36,49 +26,75 @@ var(
 
 )
 
-type RedisGatewayServer struct {}
-
-//, reply rs.RedisGateway_GetDataServer
-func (s *RedisGatewayServer) getData(ctx context.Context, in *rs.KeyRequest) (*rs.DataReply, error) {
-				
-	//set to redis service
-	conn, _ := redis.Dial("tcp", "redis:6379")
-	defer conn.Close()
-	val, _ := conn.Do("GET", in.Key)
-	stringVal := val.(string)
-	return &rs.DataReply{Key: in.Key, Value: stringVal}, nil
-	
-
-	
-}
 
 
-func (s *RedisGatewayServer) setData(ctx context.Context, in *rs.KeyRequest) (*rs.Empty, error) {
+func (s *RedisGatewayServer) SetData(ctx context.Context, in *rs.KeyRequest) (*rs.Empty, error) {
 				
 	//set to redis service
 	conn, _ := redis.Dial("tcp", "redis:6379")
 	defer conn.Close()		
-	//convertAvg := strconv.FormatFloat(average, 'f', 6, 64)	
+		
 	conn.Do("SET", in.Key, in.Value)
 	
 	return &rs.Empty{}, nil
 	
 }
 
+type Result struct{
+	
+	Key:	string   `json:"key,omitempty"` 
+	Value:	string   `json:"value,omitempty"` 
+	
+	
+}
+
+var results []Result
+
+
+func GetResult(w http.ResponseWriter, r *http.Request) {
+	
+	params := mux.Vars(r)
+	
+	conn, _ := redis.Dial("tcp", "redis:6379")
+	defer conn.Close()	
+	
+
+		
+	val, err := redis.String(conn.Do("GET", params["key"]))
+
+	if err != nil{
+		
+		json.NewEncoder(w).Encode(&Result{})
+		return
+	} 
+	
+	json.NewEncoder(w).Encode(&Result{Key: params["key"], Value: val})
+	
+}
+
+//func GetAllResults(w http.ResponseWriter, r *http.Request) {
+//	conn, _ := redis.Dial("tcp", "redis:6379")
+//	defer conn.Close()	
+//	json.NewEncoder(w).Encode(results)
+//}
+
 
 
 func main() {
 	
-	flag.Parse()
-	lis, err := net.Listen("tcp", ":10010")
-	if err != nil {
-	        log.Fatalf("failed to listen: %v", err)
-	}
-	grpcServer := grpc.NewServer()
-	//newServer := &RedisGatewayServer{}
-	rs.RegisterRedisGatewayServer(grpcServer, &RedisGatewayServer)
-	grpcServer.Serve(lis)
+	results = append(results, Result{Key: "trump", Value: "0.2"})
+	results = append(results, Result{Key: "hilary", Value: "0.3"})
+	results = append(results, Result{Key: "obama", Value: "0.4"})
+	
+	router := mux.NewRouter()
+    log.Fatal(http.ListenAndServe(":8000", router))
+    
+    
+    router.HandleFunc("/getresult/{key}", GetResult).Methods("GET")
+//    router.HandleFunc("/getallresults", GetAllResults).Methods("GET")
+    //router.HandleFunc("/sendresult/{key}", SendResult).Methods("POST")
 	
 	
+ 
 	
 }

@@ -1,21 +1,15 @@
 #! /bin/bash
-kubectl delete services redis-gateway
+
 
 kubectl delete services compute-service
 
 kubectl delete services web-service
 
-kubectl delete deployments redis-gateway
+
 
 kubectl delete deployments compute-service
 
 kubectl delete deployments web-service
-
-docker build -t redis-gateway RedisGateway
-
-docker tag redis-gateway gcr.io/microassignment-199111/redis-gateway:v1
-
-docker push gcr.io/microassignment-199111/redis-gateway:v1
 
 docker build -t compute-service ComputeService
 

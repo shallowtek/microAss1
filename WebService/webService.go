@@ -12,13 +12,14 @@ import (
     "net/url"
     "time"
 //    "io/ioutil"
-//    "encoding/json"
+    "encoding/json"
     //generate unique ID
 	//"github.com/segmentio/ksuid"
 	//"github.com/go-redis/redis"
-	"github.com/gomodule/redigo/redis" 
-	rs "github.com/shallowtek/microAss1/RedisGateway/proto"
-	//"github.com/gorilla/mux"
+	//"github.com/gomodule/redigo/redis" 
+
+	"github.com/gorilla/mux"
+	//"reflect"
 	
 )
 
@@ -28,9 +29,8 @@ import (
 
 var(
 
-
 	id time.Time
-	//rClient *redis.Client
+	//client rs.RedisGatewayClient
 	//conn redis.Conn
 	term string
 	choice string
@@ -76,76 +76,23 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 func handlerScore(w http.ResponseWriter, r *http.Request) {
 	
+
 	
-	conn, err := grpc.Dial("redis-gateway:10010", opts... )
-	if err != nil {
-		log.Fatalf("fail to dial: %v", err)
-	}
-	defer conn.Close()
-    
-	client := rs.NewRedisGatewayClient(conn)
-	newKey := choice+term
-	val, _ := client.GetData(context.Background(), &rs.KeyRequest{newKey, ""})
 		
-//    combinedTerm := choice + term
-//  	
-//  	res, _ := http.Get("http://compute-service:9090/result/" + combinedTerm)
-  	
-//  	body, readErr := ioutil.ReadAll(res.Body)
-//	if readErr != nil {
-//		log.Fatal(readErr)
-//	}
-	
-//	result := Result{}
-//	jsonErr := json.Unmarshal(body, &result)
-//	if jsonErr != nil {
-//		log.Fatal(jsonErr)
-//	}
-  	
-  	fmt.Fprintf(w, "This is the " + choice + " Sentiment score: %s \n", val.Value)  
-  	
-   
+  	   
     
 }
 
-func handlerSubmitTwit(w http.ResponseWriter, r *http.Request) {
-	
-	//twitScore = r.URL.Path[12:]
-	
-    fmt.Fprintf(w, "You have submiited new twitter score")
-}
-
-func handlerSubmitBbc(w http.ResponseWriter, r *http.Request) {
-	
-	//bbcScore = r.URL.Path[11:]
-	
-    fmt.Fprintf(w, "You have submiited new bbc score")
-}
 
 
 func main() {
-	
-//	var pool = newPool()
-//	conn = pool.Get()
-//	rClient = redis.NewClient(&redis.Options{	
-//		Addr: "redis:6379",		
-//	})
-//	
 
-//	router := mux.NewRouter()
-//	router.HandleFunc("/home", handler).Methods("GET")
-//	router.HandleFunc("/score", handlerScore).Methods("GET")
-//	
-//    //router.HandleFunc("/results/{key}", GetResults).Methods("GET")
-//		
-//    log.Fatal(http.ListenAndServe(":8080", router))
-    
-    
-	http.HandleFunc("/home", handler)
-	http.HandleFunc("/score", handlerScore)
-//	http.HandleFunc("/submitTwit/", handlerSubmitTwit)
-//	http.HandleFunc("/submitBbc/", handlerSubmitBbc)
-	
-	log.Fatal(http.ListenAndServe(":8080", nil))	
+	router := mux.NewRouter()
+    log.Fatal(http.ListenAndServe(":8080", router))
+  
+    router.HandleFunc("/home", handler).Methods("GET")
+    router.HandleFunc("/score", handlerScore).Methods("GET")
+ 
+		
     	
 }

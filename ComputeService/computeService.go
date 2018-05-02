@@ -114,14 +114,14 @@ func printFeatures(client ts.TwitterServiceClient, in *ts.TweetsRequest){
 		
 	}//end for loop	
 	
-	conn, err := grpc.Dial("redis-gateway:10010", opts... )
+	conn, err := grpc.Dial("redis-gateway:10010")
 	if err != nil {
 		log.Fatalf("fail to dial: %v", err)
 	}
 	defer conn.Close()
-	convertAvg := strconv.FormatFloat(average, 'f', 6, 64)
-	client := rs.NewRedisGatewayClient(conn)
-	feature, _ := client.SetData(context.Background(), &rs.KeyRequest{in.Name, convertAvg})
+	//convertAvg := strconv.FormatFloat(average, 'f', 6, 64)
+	clientRedis := rs.NewRedisGatewayClient(conn)
+	clientRedis.SetData(context.Background(), &rs.KeyRequest{in.Name, "twitValue"})
 	
 	
 	
@@ -174,14 +174,14 @@ func printNews(client bs.BbcServiceClient, in *bs.NewsRequest){
 				
 	}//end for loop
 
-	conn, err := grpc.Dial("redis-gateway:10010", opts... )
+	conn, err := grpc.Dial("redis-gateway:10010")
 	if err != nil {
 		log.Fatalf("fail to dial: %v", err)
 	}
 	defer conn.Close()
-    convertAvg := strconv.FormatFloat(average, 'f', 6, 64)
-	client := rs.NewRedisGatewayClient(conn)
-	feature, _ := client.SetData(context.Background(), &rs.KeyRequest{in.Name, convertAvg})
+    //convertAvg := strconv.FormatFloat(average, 'f', 6, 64)
+	clientRedis := rs.NewRedisGatewayClient(conn)
+	clientRedis.SetData(context.Background(), &rs.KeyRequest{in.Name, "bbcValue"})
 	
 
 	
@@ -193,7 +193,7 @@ func printNews(client bs.BbcServiceClient, in *bs.NewsRequest){
 //is called. A value is returned and sent to the web service to be displayed.
 func startTwitter(term string, timeN string, opts []grpc.DialOption){
 
-	conn, err := grpc.Dial("twitter-service:10000", opts... )
+	conn, err := grpc.Dial("twitter-service:10000")
 	if err != nil {
 		log.Fatalf("fail to dial: %v", err)
 	}

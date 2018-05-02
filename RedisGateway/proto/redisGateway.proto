@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 ////protoc -I proto/ proto/redisGateway.proto --go_out=plugins=grpc:proto
+//export PATH=$PATH:$GOPATH/bin
 
 
 
@@ -26,7 +27,6 @@ package redisGateway;
 
 service redisGateway {
   
-  rpc getData (KeyRequest) returns (DataReply) {}
 
   rpc setData (KeyRequest) returns (Empty) {}
   
@@ -43,8 +43,4 @@ message Empty {
 
 }
 
-// The response message containing the greetings
-message DataReply {
-  string key = 1;
-  string value = 2;
-}
+
