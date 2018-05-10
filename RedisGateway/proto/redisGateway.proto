@@ -27,8 +27,8 @@ package redisGateway;
 
 service redisGateway {
   
-
-  rpc setData (KeyRequest) returns (Empty) {}
+  rpc getData (KeyRequest) returns (KeyRequest) {}
+  rpc setData (KeyRequest) returns (KeyRequest) {}
   
 }
 

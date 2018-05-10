@@ -16,7 +16,7 @@ import (
 	"google.golang.org/grpc/testdata"
 	ts "github.com/shallowtek/microAss1/TwitterService/proto"
 	bs "github.com/shallowtek/microAss1/BbcService/proto"
-	rs "github.com/shallowtek/microAss1/RedisGateway/proto"
+	//rs "github.com/shallowtek/microAss1/RedisGateway/proto"
 	"github.com/cdipaolo/sentiment"
 	//"github.com/go-redis/redis"
 	//"github.com/gomodule/redigo/redis"
@@ -114,14 +114,9 @@ func printFeatures(client ts.TwitterServiceClient, in *ts.TweetsRequest){
 		
 	}//end for loop	
 	
-	conn, err := grpc.Dial("redis-gateway:10010")
-	if err != nil {
-		log.Fatalf("fail to dial: %v", err)
-	}
-	defer conn.Close()
 	//convertAvg := strconv.FormatFloat(average, 'f', 6, 64)
-	clientRedis := rs.NewRedisGatewayClient(conn)
-	clientRedis.SetData(context.Background(), &rs.KeyRequest{in.Name, "twitValue"})
+	resp, _ := http.Post("http://redis-Gateway:8000/sendresult/twitbush/0.6")
+	defer resp.Body.Close()
 	
 	
 	
@@ -174,14 +169,9 @@ func printNews(client bs.BbcServiceClient, in *bs.NewsRequest){
 				
 	}//end for loop
 
-	conn, err := grpc.Dial("redis-gateway:10010")
-	if err != nil {
-		log.Fatalf("fail to dial: %v", err)
-	}
-	defer conn.Close()
-    //convertAvg := strconv.FormatFloat(average, 'f', 6, 64)
-	clientRedis := rs.NewRedisGatewayClient(conn)
-	clientRedis.SetData(context.Background(), &rs.KeyRequest{in.Name, "bbcValue"})
+	//convertAvg := strconv.FormatFloat(average, 'f', 6, 64)
+	resp, _ := http.Post("http://redis-Gateway:8000/sendresult/bbcbush/0.5")
+	defer resp.Body.Close()
 	
 
 	
@@ -271,8 +261,6 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 	
 }
-
-
 
 
 func main() {

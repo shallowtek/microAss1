@@ -12,7 +12,7 @@ import (
     "net/url"
     "time"
 //    "io/ioutil"
-    "encoding/json"
+    //"encoding/json"
     //generate unique ID
 	//"github.com/segmentio/ksuid"
 	//"github.com/go-redis/redis"
@@ -75,12 +75,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func handlerScore(w http.ResponseWriter, r *http.Request) {
-	
-
-	
-		
-  	   
-    
+	   
 }
 
 

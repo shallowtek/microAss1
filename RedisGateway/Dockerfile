@@ -10,7 +10,7 @@ COPY . .
 #get all the imports and install
 run go get -d -v ./...
 
-EXPOSE 10010
+EXPOSE 8081
 
 #build the go file
 RUN go build redisGateway.go

@@ -36,7 +36,7 @@ func (m *KeyRequest) Reset()         { *m = KeyRequest{} }
 func (m *KeyRequest) String() string { return proto.CompactTextString(m) }
 func (*KeyRequest) ProtoMessage()    {}
 func (*KeyRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_redisGateway_901de6d54ed0e48b, []int{0}
+	return fileDescriptor_redisGateway_87059a44125f370b, []int{0}
 }
 func (m *KeyRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_KeyRequest.Unmarshal(m, b)
@@ -80,7 +80,7 @@ func (m *Empty) Reset()         { *m = Empty{} }
 func (m *Empty) String() string { return proto.CompactTextString(m) }
 func (*Empty) ProtoMessage()    {}
 func (*Empty) Descriptor() ([]byte, []int) {
-	return fileDescriptor_redisGateway_901de6d54ed0e48b, []int{1}
+	return fileDescriptor_redisGateway_87059a44125f370b, []int{1}
 }
 func (m *Empty) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Empty.Unmarshal(m, b)
@@ -116,7 +116,8 @@ const _ = grpc.SupportPackageIsVersion4
 // Client API for RedisGateway service
 
 type RedisGatewayClient interface {
-	SetData(ctx context.Context, in *KeyRequest, opts ...grpc.CallOption) (*Empty, error)
+	GetData(ctx context.Context, in *KeyRequest, opts ...grpc.CallOption) (*KeyRequest, error)
+	SetData(ctx context.Context, in *KeyRequest, opts ...grpc.CallOption) (*KeyRequest, error)
 }
 
 type redisGatewayClient struct {
@@ -127,8 +128,17 @@ func NewRedisGatewayClient(cc *grpc.ClientConn) RedisGatewayClient {
 	return &redisGatewayClient{cc}
 }
 
-func (c *redisGatewayClient) SetData(ctx context.Context, in *KeyRequest, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
+func (c *redisGatewayClient) GetData(ctx context.Context, in *KeyRequest, opts ...grpc.CallOption) (*KeyRequest, error) {
+	out := new(KeyRequest)
+	err := grpc.Invoke(ctx, "/redisGateway.redisGateway/getData", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *redisGatewayClient) SetData(ctx context.Context, in *KeyRequest, opts ...grpc.CallOption) (*KeyRequest, error) {
+	out := new(KeyRequest)
 	err := grpc.Invoke(ctx, "/redisGateway.redisGateway/setData", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
@@ -139,11 +149,30 @@ func (c *redisGatewayClient) SetData(ctx context.Context, in *KeyRequest, opts .
 // Server API for RedisGateway service
 
 type RedisGatewayServer interface {
-	SetData(context.Context, *KeyRequest) (*Empty, error)
+	GetData(context.Context, *KeyRequest) (*KeyRequest, error)
+	SetData(context.Context, *KeyRequest) (*KeyRequest, error)
 }
 
 func RegisterRedisGatewayServer(s *grpc.Server, srv RedisGatewayServer) {
 	s.RegisterService(&_RedisGateway_serviceDesc, srv)
+}
+
+func _RedisGateway_GetData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(KeyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RedisGatewayServer).GetData(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/redisGateway.redisGateway/GetData",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RedisGatewayServer).GetData(ctx, req.(*KeyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _RedisGateway_SetData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -169,6 +198,10 @@ var _RedisGateway_serviceDesc = grpc.ServiceDesc{
 	HandlerType: (*RedisGatewayServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
+			MethodName: "getData",
+			Handler:    _RedisGateway_GetData_Handler,
+		},
+		{
 			MethodName: "setData",
 			Handler:    _RedisGateway_SetData_Handler,
 		},
@@ -177,20 +210,20 @@ var _RedisGateway_serviceDesc = grpc.ServiceDesc{
 	Metadata: "redisGateway.proto",
 }
 
-func init() { proto.RegisterFile("redisGateway.proto", fileDescriptor_redisGateway_901de6d54ed0e48b) }
+func init() { proto.RegisterFile("redisGateway.proto", fileDescriptor_redisGateway_87059a44125f370b) }
 
-var fileDescriptor_redisGateway_901de6d54ed0e48b = []byte{
-	// 182 bytes of a gzipped FileDescriptorProto
+var fileDescriptor_redisGateway_87059a44125f370b = []byte{
+	// 186 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x12, 0x2a, 0x4a, 0x4d, 0xc9,
 	0x2c, 0x76, 0x4f, 0x2c, 0x49, 0x2d, 0x4f, 0xac, 0xd4, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0xe2,
 	0x41, 0x16, 0x53, 0x32, 0xe1, 0xe2, 0xf2, 0x4e, 0xad, 0x0c, 0x4a, 0x2d, 0x2c, 0x4d, 0x2d, 0x2e,
 	0x11, 0x12, 0xe0, 0x62, 0xce, 0x4e, 0xad, 0x94, 0x60, 0x54, 0x60, 0xd4, 0xe0, 0x0c, 0x02, 0x31,
 	0x85, 0x44, 0xb8, 0x58, 0xc3, 0x12, 0x73, 0x4a, 0x53, 0x25, 0x98, 0xc0, 0x62, 0xac, 0x65, 0x20,
-	0x8e, 0x12, 0x3b, 0x17, 0xab, 0x6b, 0x6e, 0x41, 0x49, 0xa5, 0x91, 0x17, 0x17, 0x8a, 0x71, 0x42,
-	0x56, 0x5c, 0xec, 0xc5, 0xa9, 0x25, 0x2e, 0x89, 0x25, 0x89, 0x42, 0x12, 0x7a, 0x28, 0x96, 0x23,
-	0x6c, 0x91, 0x12, 0x46, 0x95, 0x01, 0x9b, 0xa4, 0xc4, 0xe0, 0x64, 0xcb, 0xa5, 0x96, 0x9c, 0x9f,
-	0xab, 0xe7, 0x9b, 0x58, 0x52, 0x12, 0x9c, 0x91, 0x98, 0x93, 0x93, 0x5f, 0xae, 0x97, 0x9b, 0x99,
-	0x5c, 0x94, 0xef, 0x58, 0x5c, 0x6c, 0x88, 0xa2, 0xc3, 0x49, 0x30, 0x08, 0x89, 0x17, 0x00, 0xf2,
-	0x55, 0x00, 0x63, 0x12, 0x1b, 0xd8, 0x7b, 0xc6, 0x80, 0x00, 0x00, 0x00, 0xff, 0xff, 0xf4, 0xe4,
-	0x60, 0x37, 0xf4, 0x00, 0x00, 0x00,
+	0x8e, 0x12, 0x3b, 0x17, 0xab, 0x6b, 0x6e, 0x41, 0x49, 0xa5, 0xd1, 0x04, 0x46, 0x2e, 0x14, 0xf3,
+	0x84, 0xec, 0xb9, 0xd8, 0xd3, 0x53, 0x4b, 0x5c, 0x12, 0x4b, 0x12, 0x85, 0x24, 0xf4, 0x50, 0x6c,
+	0x47, 0x58, 0x23, 0x85, 0x53, 0x46, 0x89, 0x01, 0x64, 0x40, 0x31, 0x25, 0x06, 0x38, 0xd9, 0x72,
+	0xa9, 0x25, 0xe7, 0xe7, 0xea, 0xf9, 0x26, 0x96, 0x94, 0x04, 0x67, 0x24, 0xe6, 0xe4, 0xe4, 0x97,
+	0xeb, 0xe5, 0x66, 0x26, 0x17, 0xe5, 0x3b, 0x16, 0x17, 0x1b, 0xa2, 0x68, 0x73, 0x12, 0x0c, 0x42,
+	0xe2, 0x05, 0x80, 0x02, 0x27, 0x80, 0x31, 0x89, 0x0d, 0x1c, 0x4a, 0xc6, 0x80, 0x00, 0x00, 0x00,
+	0xff, 0xff, 0x09, 0xf7, 0x96, 0x6c, 0x3b, 0x01, 0x00, 0x00,
 }
