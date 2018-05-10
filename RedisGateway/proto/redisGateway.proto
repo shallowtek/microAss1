@@ -34,7 +34,7 @@ service redisGateway {
 
 // The request message containing the user's name.
 message KeyRequest {
-  string key = 1;
+  string Key = 1;
   string Value = 2;
   
 }

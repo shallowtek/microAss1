@@ -8,12 +8,12 @@ import (
 	"log"
 	//"os"
 	"net/http"
-	//"golang.org/x/net/context"
-	
+	"golang.org/x/net/context"
+	"net"
 	//"strconv"
-	//rs "github.com/shallowtek/microAss1/RedisGateway/proto"
+	rs "github.com/shallowtek/microAss1/RedisGateway/proto"
 	"encoding/json"
-	//"google.golang.org/grpc"
+	"google.golang.org/grpc"
 	"github.com/gomodule/redigo/redis"
 	//"github.com/gorilla/mux"
 	
@@ -27,19 +27,29 @@ import (
 //
 //)
 
+type RedisGatewayServer struct {}
+func (s *RedisGatewayServer) GetData(ctx context.Context, in *rs.KeyRequest) (*rs.KeyRequest, error) {
+	
+	conn, _ := redis.Dial("tcp", "redis:6379")
+	defer conn.Close()	
 
-//
-//func (s *RedisGatewayServer) SetData(ctx context.Context, in *rs.KeyRequest) (*rs.Empty, error) {
-//				
-//	//set to redis service
-//	conn, _ := redis.Dial("tcp", "redis:6379")
-//	defer conn.Close()		
-//		
-//	conn.Do("SET", in.Key, in.Value)
-//	
-//	return &rs.Empty{}, nil
-//	
-//}
+	//val, _ := redis.String(conn.Do("GET", in.Key))
+	
+	return &rs.KeyRequest{key: "trump", Value: "value"}, nil
+}
+
+func (s *RedisGatewayServer) SetData(ctx context.Context, in *rs.KeyRequest) (*rs.KeyRequest, error) {
+	
+	
+	conn, _ := redis.Dial("tcp", "redis:6379")
+	defer conn.Close()	
+
+	conn.Do("SET", in.key, in.Value)
+	
+	
+	// No feature was found, return an unnamed feature
+	return &rs.KeyRequest{}, nil
+}
 
 type Result struct{
 	
@@ -106,9 +116,23 @@ func main() {
     //log.Fatal(http.ListenAndServe(":8081", router))
     
     
-    http.HandleFunc("/getresult", GetResult)
-    log.Fatal(http.ListenAndServe(":8081", nil))
-   
+//    http.HandleFunc("/getresult", GetResult)
+//    log.Fatal(http.ListenAndServe(":8081", nil))
+  
+	
+	//Have server listen on port 10000
+	lis, err := net.Listen("tcp", ":8081")
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+	
+	grpcServer := grpc.NewServer()
+	newServer := &RedisGatewayServer{}
+	rs.RegisterRedisGatewayServer(grpcServer, newServer)
+
+	if err := grpcServer.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
+	}
  
 	
 }
