@@ -18,7 +18,7 @@ spec:
         io.kompose.service: bbc-service
     spec:
       containers:
-      - image: index.docker.io/mattshallow/micro:bbc-v1
+      - image: gcr.io/microassignment-199111/bbc-service:v1
         imagePullPolicy: Always
         name: bbc-service
         ports:

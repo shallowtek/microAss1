@@ -18,7 +18,7 @@ spec:
         io.kompose.service: twitter-service
     spec:
       containers:
-      - image: index.docker.io/mattshallow/micro:twitter-v1
+      - image: gcr.io/microassignment-199111/twitter-service:v1
         name: twitter-service
         ports:
         - containerPort: 10000

@@ -6,7 +6,8 @@ metadata:
   name: redis-gateway
 spec:
   ports:
-  - name: "10010"
-    port: 10010
+  - name: "10006"
+    port: 10006
+    targetPort: 8080
   selector:
     app: redis-gateway

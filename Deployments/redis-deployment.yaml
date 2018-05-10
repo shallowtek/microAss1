@@ -12,8 +12,14 @@ spec:
       containers:
       - name: redis
         image: redis
+        volumeMounts:
+        - name: redis-persistent-storage
+          mountPath: /data/redis
         ports:
         - containerPort: 6379
+      volumes:
+      - name: redis-persistent-storage
+        emptyDir: {}
 
 
         

@@ -25,36 +25,16 @@ const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
 // The request message containing the user's name.
 type KeyRequest struct {
-	Key                  string   `protobuf:"bytes,1,opt,name=Key,json=key" json:"Key,omitempty"`
-	Value                string   `protobuf:"bytes,2,opt,name=Value,json=value" json:"Value,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	Key                  string   `protobuf:"bytes,1,opt,name=Key" json:"Key,omitempty"`
+	Value                string   `protobuf:"bytes,1,opt,name=Value" json:"Value,omitempty"`
 }
 
 func (m *KeyRequest) Reset()         { *m = KeyRequest{} }
 func (m *KeyRequest) String() string { return proto.CompactTextString(m) }
 func (*KeyRequest) ProtoMessage()    {}
-func (*KeyRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_redisGateway_414f2a21bf010175, []int{0}
-}
-func (m *KeyRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_KeyRequest.Unmarshal(m, b)
-}
-func (m *KeyRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_KeyRequest.Marshal(b, m, deterministic)
-}
-func (dst *KeyRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_KeyRequest.Merge(dst, src)
-}
-func (m *KeyRequest) XXX_Size() int {
-	return xxx_messageInfo_KeyRequest.Size(m)
-}
-func (m *KeyRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_KeyRequest.DiscardUnknown(m)
-}
+func (*KeyRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
 
-var xxx_messageInfo_KeyRequest proto.InternalMessageInfo
+
 
 func (m *KeyRequest) GetKey() string {
 	if m != nil {

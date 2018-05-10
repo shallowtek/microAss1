@@ -10,20 +10,24 @@ import (
 	"math"	
 	"strconv"
 	"net/http"
+	"net/url"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/testdata"
 	ts "github.com/shallowtek/microAss1/TwitterService/proto"
 	bs "github.com/shallowtek/microAss1/BbcService/proto"
-	//rs "github.com/shallowtek/microAss1/RedisGateway/proto"
+	rs "github.com/shallowtek/microAss1/RedisGateway/proto"
 	"github.com/cdipaolo/sentiment"
 	//"github.com/go-redis/redis"
 	//"github.com/gomodule/redigo/redis"
 	//"encoding/json"
     //"github.com/gorilla/mux"
 	
-
+	//force delete docker images docker rmi -f $(docker images | grep '^<none>' | awk '{print $3}')
+	//$ docker rm $(docker ps -aq)
+	//$ docker rmi $(docker images -q)
+	//docker system prune
 	
 )
 
@@ -56,7 +60,7 @@ var (
 //    key := params["key"] 
 //    
 //    conn, _ := redis.Dial("tcp", "redis:6379")
-//	defer conn.Close()
+//	  defer conn.Close()
 //	
 //    val, _:= conn.Do("GET", key)
 //    result := Result{Value: val.(string)}
@@ -114,9 +118,11 @@ func printFeatures(client ts.TwitterServiceClient, in *ts.TweetsRequest){
 		
 	}//end for loop	
 	
-	//convertAvg := strconv.FormatFloat(average, 'f', 6, 64)
-	resp, _ := http.Post("http://redis-Gateway:8000/sendresult/twitbush/0.6")
+	
+	convertAvg := strconv.FormatFloat(average, 'f', 6, 64)
+	resp, _ := http.PostForm("http://web-service:8080/sendresult/", url.Values{"key": {in.Name}, "value": {convertAvg}})
 	defer resp.Body.Close()
+	
 	
 	
 	
@@ -170,12 +176,47 @@ func printNews(client bs.BbcServiceClient, in *bs.NewsRequest){
 	}//end for loop
 
 	//convertAvg := strconv.FormatFloat(average, 'f', 6, 64)
-	resp, _ := http.Post("http://redis-Gateway:8000/sendresult/bbcbush/0.5")
-	defer resp.Body.Close()
+	//http.Post("http://redis-gateway:8080/sendresult/" + in.Name + "/" + convertAvg)
+//	resp, _ := http.PostForm("http://redis-gateway:8000/sendresult", url.Values{"Key": {"trump"}, "Value": {"value"}})
+//	defer resp.Body.Close()
 	
-
+//	rClient := redis.NewClient(&redis.Options{
+//		Addr:     "web-service:6379",
+//		Password: "", // no password set
+//		DB:       0,  // use default DB
+//	})
+//	
+//	rClient.Set("trump", "value", 0).Err()
 	
-			
+//	conn, _ := redis.Dial("tcp", "redis-instance:6379") 
+//	defer conn.Close()
+//	
+//	conn.Do("SET", "trump", "value")
+	flag.Parse()
+	var opts []grpc.DialOption
+	if *tls {
+		if *caFile == "" {
+			*caFile = testdata.Path("ca.pem")
+		}
+		creds, err := credentials.NewClientTLSFromFile(*caFile, *serverHostOverride)
+		if err != nil {
+			log.Fatalf("Failed to create TLS credentials %v", err)
+		}
+		opts = append(opts, grpc.WithTransportCredentials(creds))
+	} else {
+		opts = append(opts, grpc.WithInsecure())
+	}
+	
+	
+	conn, err := grpc.Dial("redis-gateway:10006", opts...)
+	if err != nil {
+		log.Fatalf("fail to dial: %v", err)
+	}
+	defer conn.Close()
+	
+	rClient := rs.NewRedisGatewayClient(conn)
+	rClient.SetData(context.Background(), &rs.KeyRequest{Key: "trump", Value: "trumpValue"})
+		
 	
 }
 
@@ -224,6 +265,15 @@ func startBbc(term string, timeN string, opts []grpc.DialOption){
 //Extracted data is the search term and how long you want to search for
 func handler(w http.ResponseWriter, r *http.Request) {
 	
+//	rClient := redis.NewClient(&redis.Options{
+//		Addr:     "redis-master:6379",
+//		Password: "", // no password set
+//		DB:       0,  // use default DB
+//	})
+//	
+//	defer rClient.Close()
+//	
+//	rClient.Set("trump", "value", 0).Err()
 	
 	flag.Parse()
 	
@@ -264,14 +314,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 
 func main() {
-	
-//	router := mux.NewRouter()
-	//router.HandleFunc("/result/{key}", GetResult).Methods("GET")
-    //router.HandleFunc("/results/{key}", GetResults).Methods("GET")
 		
-//	router.HandleFunc("/start", handler).Methods("GET")	
-//    log.Fatal(http.ListenAndServe(":9090", router))
-    
+	//defer conn.Close()	
     http.HandleFunc("/start", handler)
 	
 	log.Fatal(http.ListenAndServe(":9090", nil))

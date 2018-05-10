@@ -11,11 +11,11 @@ kubectl delete deployments compute-service
 
 kubectl delete deployments web-service
 
-docker build -t compute-service ComputeService
+docker build -t bbc-service BbcService
 
-docker tag compute-service gcr.io/microassignment-199111/compute-service:v1
+docker tag bbc-service gcr.io/microassignment-199111/bbc-service:v1
 
-docker push gcr.io/microassignment-199111/compute-service:v1
+docker push gcr.io/microassignment-199111/bbc-service:v1
 
 docker build -t web-service WebService
 

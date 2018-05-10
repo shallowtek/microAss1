@@ -5,14 +5,14 @@ metadata:
     app: redis-gateway
   name: redis-gateway
 spec:
-  replicas: 3
+  replicas: 1
   template:
     metadata:
       labels:
-        io.kompose.service: redis-gateway
+        app: redis-gateway
     spec:
       containers:
       - image: gcr.io/microassignment-199111/redis-gateway:v1
         name: redis-gateway
         ports:
-        - containerPort: 10010
+        - containerPort: 10006

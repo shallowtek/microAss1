@@ -3,7 +3,7 @@ package main
 
 import (
 	
-	//"flag"
+	"flag"
 	
 	"log"
 	//"os"
@@ -13,29 +13,34 @@ import (
 	//"strconv"
 	rs "github.com/shallowtek/microAss1/RedisGateway/proto"
 	"encoding/json"
-	"google.golang.org/grpc"
 	"github.com/gomodule/redigo/redis"
 	//"github.com/gorilla/mux"
-	
+	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/testdata"
 )
 
-//var(
-//	port       = flag.Int("port", 10010, "The server port")
-//	tls        = flag.Bool("tls", false, "Connection uses TLS if true, else plain TCP")
-//	certFile   = flag.String("cert_file", "", "The TLS cert file")
-//	keyFile    = flag.String("key_file", "", "The TLS key file")
-//
-//)
+var(
+	port       = flag.Int("port", 10006, "The server port")
+	tls        = flag.Bool("tls", false, "Connection uses TLS if true, else plain TCP")
+	certFile   = flag.String("cert_file", "", "The TLS cert file")
+	keyFile    = flag.String("key_file", "", "The TLS key file")
+
+)
 
 type RedisGatewayServer struct {}
+
 func (s *RedisGatewayServer) GetData(ctx context.Context, in *rs.KeyRequest) (*rs.KeyRequest, error) {
 	
-	conn, _ := redis.Dial("tcp", "redis:6379")
-	defer conn.Close()	
+//	conn, _ := redis.Dial("tcp", "redis:6379")
+//	defer conn.Close()	
 
 	//val, _ := redis.String(conn.Do("GET", in.Key))
 	
-	return &rs.KeyRequest{key: "trump", Value: "value"}, nil
+	
+	
+	
+	return &rs.KeyRequest{Key: "trump", Value: "value"}, nil
 }
 
 func (s *RedisGatewayServer) SetData(ctx context.Context, in *rs.KeyRequest) (*rs.KeyRequest, error) {
@@ -44,7 +49,7 @@ func (s *RedisGatewayServer) SetData(ctx context.Context, in *rs.KeyRequest) (*r
 	conn, _ := redis.Dial("tcp", "redis:6379")
 	defer conn.Close()	
 
-	conn.Do("SET", in.key, in.Value)
+	conn.Do("SET", in.Key, in.Value)
 	
 	
 	// No feature was found, return an unnamed feature
@@ -121,12 +126,32 @@ func main() {
   
 	
 	//Have server listen on port 10000
-	lis, err := net.Listen("tcp", ":8081")
+	
+	flag.Parse()
+	
+	lis, err := net.Listen("tcp", ":10006")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	
-	grpcServer := grpc.NewServer()
+	
+	var opts []grpc.ServerOption
+	if *tls {
+		if *certFile == "" {
+			*certFile = testdata.Path("server1.pem")
+		}
+		if *keyFile == "" {
+			*keyFile = testdata.Path("server1.key")
+		}
+		creds, err := credentials.NewServerTLSFromFile(*certFile, *keyFile)
+		if err != nil {
+			log.Fatalf("Failed to generate credentials %v", err)
+		}
+		opts = []grpc.ServerOption{grpc.Creds(creds)}
+	}
+	
+		
+	grpcServer := grpc.NewServer(opts...)
 	newServer := &RedisGatewayServer{}
 	rs.RegisterRedisGatewayServer(grpcServer, newServer)
 
