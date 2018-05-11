@@ -8,6 +8,6 @@ spec:
   ports:
   - name: "10006"
     port: 10006
-    targetPort: 8080
+    targetPort: 10006
   selector:
     app: redis-gateway

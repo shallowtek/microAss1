@@ -1,5 +1,5 @@
-#get golang
-FROM golang:1.8
+#get golang gcloud components install docker-credential-gcr
+FROM golang:latest
 
 #select working directory
 WORKDIR /RedisGateway
