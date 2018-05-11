@@ -99,7 +99,7 @@ func NewRedisGatewayClient(cc *grpc.ClientConn) RedisGatewayClient {
 
 func (c *redisGatewayClient) GetData(ctx context.Context, in *KeyRequest, opts ...grpc.CallOption) (*KeyRequest, error) {
 	out := new(KeyRequest)
-	err := grpc.Invoke(ctx, "/RedisGateway/getData", in, out, c.cc, opts...)
+	err := grpc.Invoke(ctx, "/redisgateway.RedisGateway/getData", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +108,7 @@ func (c *redisGatewayClient) GetData(ctx context.Context, in *KeyRequest, opts .
 
 func (c *redisGatewayClient) SetData(ctx context.Context, in *KeyRequest, opts ...grpc.CallOption) (*KeyRequest, error) {
 	out := new(KeyRequest)
-	err := grpc.Invoke(ctx, "/RedisGateway/setData", in, out, c.cc, opts...)
+	err := grpc.Invoke(ctx, "/redisgateway.RedisGateway/setData", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +136,7 @@ func _RedisGateway_GetData_Handler(srv interface{}, ctx context.Context, dec fun
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/RedisGateway/GetData",
+		FullMethod: "/redisgateway.RedisGateway/GetData",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RedisGatewayServer).GetData(ctx, req.(*KeyRequest))
@@ -154,7 +154,7 @@ func _RedisGateway_SetData_Handler(srv interface{}, ctx context.Context, dec fun
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/RedisGateway/SetData",
+		FullMethod: "/redisgateway.RedisGateway/SetData",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RedisGatewayServer).SetData(ctx, req.(*KeyRequest))
@@ -163,7 +163,7 @@ func _RedisGateway_SetData_Handler(srv interface{}, ctx context.Context, dec fun
 }
 
 var _RedisGateway_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "RedisGateway",
+	ServiceName: "redisgateway.RedisGateway",
 	HandlerType: (*RedisGatewayServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
