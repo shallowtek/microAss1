@@ -3,7 +3,7 @@ package main
 
 import (
 	
-	"flag"
+	//"flag"
 	
 	"log"
 	//"os"
@@ -15,16 +15,16 @@ import (
 	"encoding/json"
 	"github.com/gomodule/redigo/redis"
 	//"github.com/gorilla/mux"
-	"google.golang.org/grpc/credentials"
+	//"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/testdata"
+	//"google.golang.org/grpc/testdata"
 )
 
 var(
-	port       = flag.Int("port", 10006, "The server port")
-	tls        = flag.Bool("tls", false, "Connection uses TLS if true, else plain TCP")
-	certFile   = flag.String("cert_file", "", "The TLS cert file")
-	keyFile    = flag.String("key_file", "", "The TLS key file")
+//	port       = flag.Int("port", 10006, "The server port")
+//	tls        = flag.Bool("tls", false, "Connection uses TLS if true, else plain TCP")
+//	certFile   = flag.String("cert_file", "", "The TLS cert file")
+//	keyFile    = flag.String("key_file", "", "The TLS key file")
 
 )
 
@@ -105,7 +105,7 @@ func SendResult(w http.ResponseWriter, r *http.Request) {
 
 
 
-func main() {
+
 	
 //	results = append(results, Result{Key: "trump", Value: "0.2"})
 //	results = append(results, Result{Key: "hilary", Value: "0.3"})
@@ -125,37 +125,41 @@ func main() {
 	
 	//Have server listen on port 10000
 	
-	flag.Parse()
+	//flag.Parse()
 	
+//	lis, err := net.Listen("tcp", ":10006")
+//	if err != nil {
+//		log.Fatalf("failed to listen: %v", err)
+//	}
+//	
+	
+//	var opts []grpc.ServerOption
+//	if *tls {
+//		if *certFile == "" {
+//			*certFile = testdata.Path("server1.pem")
+//		}
+//		if *keyFile == "" {
+//			*keyFile = testdata.Path("server1.key")
+//		}
+//		creds, err := credentials.NewServerTLSFromFile(*certFile, *keyFile)
+//		if err != nil {
+//			log.Fatalf("Failed to generate credentials %v", err)
+//		}
+//		opts = []grpc.ServerOption{grpc.Creds(creds)}
+//	}
+	
+func main() {
 	lis, err := net.Listen("tcp", ":10006")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	
-	
-	var opts []grpc.ServerOption
-	if *tls {
-		if *certFile == "" {
-			*certFile = testdata.Path("server1.pem")
-		}
-		if *keyFile == "" {
-			*keyFile = testdata.Path("server1.key")
-		}
-		creds, err := credentials.NewServerTLSFromFile(*certFile, *keyFile)
-		if err != nil {
-			log.Fatalf("Failed to generate credentials %v", err)
-		}
-		opts = []grpc.ServerOption{grpc.Creds(creds)}
-	}
-	
 		
-	grpcServer := grpc.NewServer(opts...)
+	grpcServer := grpc.NewServer()
 	newServer := &RedisGatewayServer{}
 	rs.RegisterRedisGatewayServer(grpcServer, newServer)
 
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
- 
-	
+ 	
 }
