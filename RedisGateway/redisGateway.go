@@ -38,9 +38,7 @@ func (s *RedisGatewayServer) GetData(ctx context.Context, in *rs.KeyRequest) (*r
 	//val, _ := redis.String(conn.Do("GET", in.Key))
 	
 	
-	
-	
-	return &rs.KeyRequest{Key: "trump", Value: "value"}, nil
+	return in, nil
 }
 
 func (s *RedisGatewayServer) SetData(ctx context.Context, in *rs.KeyRequest) (*rs.KeyRequest, error) {

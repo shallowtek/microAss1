@@ -10,11 +10,11 @@ COPY . .
 #get all the imports and install
 run go get -d -v ./...
 
-EXPOSE 10006
 
 #build the go file
 RUN go build redisGateway.go
 
+EXPOSE 10006
 #start the service
 ENTRYPOINT ["/RedisGateway/redisGateway"]
 

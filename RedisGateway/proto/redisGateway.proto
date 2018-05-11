@@ -19,13 +19,13 @@
 syntax = "proto3";
 
 option java_multiple_files = true;
-option java_package = "com.MattShallow.microAss1.redisGateway";
+option java_package = "microAss1.RedisGateway/[roto";
 option java_outer_classname = "RedisGatewayProto";
 
 package redisGateway;
 
 
-service redisGateway {
+service RedisGateway {
   
   rpc getData (KeyRequest) returns (KeyRequest) {}
   rpc setData (KeyRequest) returns (KeyRequest) {}
@@ -39,8 +39,6 @@ message KeyRequest {
   
 }
 
-message Empty {
 
-}
 
 
