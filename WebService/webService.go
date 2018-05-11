@@ -13,7 +13,7 @@ import (
     "time"
 //    "io/ioutil"
 //    "encoding/json"
-    "flag"
+//    "flag"
     //generate unique ID
 	//"github.com/segmentio/ksuid"
 	//"github.com/go-redis/redis"
@@ -25,17 +25,17 @@ import (
 	rs "github.com/shallowtek/microAss1/RedisGateway/proto"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/testdata"
+//	"google.golang.org/grpc/credentials"
+//	"google.golang.org/grpc/testdata"
 )
 
 
 
 var(
 
-	tls                = flag.Bool("tls", false, "Connection uses TLS if true, else plain TCP")
-	caFile             = flag.String("ca_file", "", "The file containning the CA root cert file")
-	serverHostOverride = flag.String("server_host_override", "x.test.youtube.com", "The server name use to verify the hostname returned by TLS handshake")
+//	tls                = flag.Bool("tls", false, "Connection uses TLS if true, else plain TCP")
+//	caFile             = flag.String("ca_file", "", "The file containning the CA root cert file")
+//	serverHostOverride = flag.String("server_host_override", "x.test.youtube.com", "The server name use to verify the hostname returned by TLS handshake")
 	//rClient rs.RedisGatewayClient
 	//conn *grpc.ClientConn
 	id time.Time
@@ -60,39 +60,38 @@ type Result struct{
 //	return id
 //}
 
+//	flag.Parse()
+//	var opts []grpc.DialOption
+//	if *tls {
+//		if *caFile == "" {
+//			*caFile = testdata.Path("ca.pem")
+//		}
+//		creds, err := credentials.NewClientTLSFromFile(*caFile, *serverHostOverride)
+//		if err != nil {
+//			log.Fatalf("Failed to create TLS credentials %v", err)
+//		}
+//		opts = append(opts, grpc.WithTransportCredentials(creds))
+//	} else {
+//		opts = append(opts, grpc.WithInsecure())
+//	}
+
 func GetResult(w http.ResponseWriter, r *http.Request) {
+	// grpc.WithInsecure()	
+	conn, errOne := grpc.Dial("redis-gateway:10006", grpc.WithInsecure())
 	
-	flag.Parse()
-	var opts []grpc.DialOption
-	if *tls {
-		if *caFile == "" {
-			*caFile = testdata.Path("ca.pem")
-		}
-		creds, err := credentials.NewClientTLSFromFile(*caFile, *serverHostOverride)
-		if err != nil {
-			log.Fatalf("Failed to create TLS credentials %v", err)
-		}
-		opts = append(opts, grpc.WithTransportCredentials(creds))
-	} else {
-		opts = append(opts, grpc.WithInsecure())
-	}
-	
-	
-	conn, err := grpc.Dial("redis-gateway:10006", opts...)
-	if err != nil {
-		fmt.Fprintf(w, "First Error: %v \n", err)
-	}
 	defer conn.Close()
 	
 	rClient := rs.NewRedisGatewayClient(conn)
-	result , err := rClient.GetData(context.Background(), &rs.KeyRequest{Key: "trump", Value: "trumpVal"})
+	result , errTwo := rClient.GetData(context.Background(), &rs.KeyRequest{Key: "trump", Value: "trumpVal"})
+	   
+	fmt.Fprintf(w, "This is the Twitter Sentiment score: %s \n", result)
 	
+	fmt.Fprintf(w, "This is the Twitter Sentiment score: %v \n", errOne)
+	fmt.Fprintf(w, "This is the Twitter Sentiment score: %s \n", errTwo)	
 	
-    
-	fmt.Fprintf(w, "This is the Twitter Sentiment score: %s \n", result)	
-	fmt.Fprintf(w, "This is the Twitter Sentiment score: %s \n", err)
-	fmt.Fprintf(w, "This is the Twitter Sentiment score: %s \n", result.GetValue())
-	
+}
+
+
 	//params := mux.Vars(r)
     //key := params["key"]
     
@@ -126,7 +125,7 @@ func GetResult(w http.ResponseWriter, r *http.Request) {
 //	val, _ := redis.String(conn.Do("GET", "trump")) 
 
 	
-}
+
 
 func SendResult(w http.ResponseWriter, r *http.Request){
 	
@@ -248,7 +247,7 @@ func main() {
 //    router.HandleFunc("/sendresult", SendResult)
 //    log.Fatal(http.ListenAndServe(":8080", router))
   
-   
+    
 	
 	http.HandleFunc("/home", handler)
 	http.HandleFunc("/getresult", GetResult)
