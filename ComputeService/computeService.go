@@ -1,6 +1,6 @@
 //Matt Shallow 14-Mar-18
 package main
-
+//create mysql secret:  kubectl create secret generic mysql --from-literal=password=YOUR_PASSWORD
 import (
 	"flag"
 	"io"
@@ -17,7 +17,7 @@ import (
 	"google.golang.org/grpc/testdata"
 	ts "github.com/shallowtek/microAss1/TwitterService/proto"
 	bs "github.com/shallowtek/microAss1/BbcService/proto"
-	rs "github.com/shallowtek/microAss1/RedisGateway/proto"
+	//rs "github.com/shallowtek/microAss1/RedisGateway/proto"
 	"github.com/cdipaolo/sentiment"
 	//"github.com/go-redis/redis"
 	//"github.com/gomodule/redigo/redis"
@@ -28,6 +28,8 @@ import (
 	//$ docker rm $(docker ps -aq)
 	//$ docker rmi $(docker images -q)
 	//docker system prune
+	_ "github.com/go-sql-driver/mysql"
+    "database/sql"
 	
 )
 
@@ -40,34 +42,13 @@ var (
 	end time.Time
 	val string
 	bbcVal string
-	id string
 //	twitName string
-//	bbcName string
-	
-	
+//	bbcName string	
 	//conn redis.Conn
-
 )
 
-//type Result struct {
-//    Value string `json:"value"`   
-//}
 
 
-// Display a single data
-//func GetResult(w http.ResponseWriter, r *http.Request) {
-//    params := mux.Vars(r)
-//    key := params["key"] 
-//    
-//    conn, _ := redis.Dial("tcp", "redis:6379")
-//	  defer conn.Close()
-//	
-//    val, _:= conn.Do("GET", key)
-//    result := Result{Value: val.(string)}
-//    	
-//    json.NewEncoder(w).Encode(result)
-//    return
-//}
 
 //This function is called by the startTwitter function. It contains the GRPC communication method to communicate with the
 //twitter service. A stream is returned and sentiment calculated and stored on redis.
@@ -174,49 +155,9 @@ func printNews(client bs.BbcServiceClient, in *bs.NewsRequest){
 		
 				
 	}//end for loop
-
-	//convertAvg := strconv.FormatFloat(average, 'f', 6, 64)
-	//http.Post("http://redis-gateway:8080/sendresult/" + in.Name + "/" + convertAvg)
-//	resp, _ := http.PostForm("http://redis-gateway:8000/sendresult", url.Values{"Key": {"trump"}, "Value": {"value"}})
-//	defer resp.Body.Close()
-	
-//	rClient := redis.NewClient(&redis.Options{
-//		Addr:     "web-service:6379",
-//		Password: "", // no password set
-//		DB:       0,  // use default DB
-//	})
-//	
-//	rClient.Set("trump", "value", 0).Err()
-	
-//	conn, _ := redis.Dial("tcp", "redis-instance:6379") 
-//	defer conn.Close()
-//	
-//	conn.Do("SET", "trump", "value")
-	flag.Parse()
-	var opts []grpc.DialOption
-	if *tls {
-		if *caFile == "" {
-			*caFile = testdata.Path("ca.pem")
-		}
-		creds, err := credentials.NewClientTLSFromFile(*caFile, *serverHostOverride)
-		if err != nil {
-			log.Fatalf("Failed to create TLS credentials %v", err)
-		}
-		opts = append(opts, grpc.WithTransportCredentials(creds))
-	} else {
-		opts = append(opts, grpc.WithInsecure())
-	}
 	
 	
-	conn, err := grpc.Dial("redis-gateway:10006", opts...)
-	if err != nil {
-		log.Fatalf("fail to dial: %v", err)
-	}
-	defer conn.Close()
 	
-	rClient := rs.NewRedisGatewayClient(conn)
-	rClient.SetData(context.Background(), &rs.KeyRequest{Key: "trump", Value: "trumpValue"})
-		
 	
 }
 
@@ -257,23 +198,18 @@ func startBbc(term string, timeN string, opts []grpc.DialOption){
 		Name: term,
 		Minutes: timeN,
 		
-	})	
+	})		
 	
 }
+
+
 
 //This function handles the post request from web-service. It extracts the form data and determines which service to use (twitter or bbc)
 //Extracted data is the search term and how long you want to search for
 func handler(w http.ResponseWriter, r *http.Request) {
 	
-//	rClient := redis.NewClient(&redis.Options{
-//		Addr:     "redis-master:6379",
-//		Password: "", // no password set
-//		DB:       0,  // use default DB
-//	})
-//	
-//	defer rClient.Close()
-//	
-//	rClient.Set("trump", "value", 0).Err()
+	
+	
 	
 	flag.Parse()
 	
@@ -296,9 +232,6 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	term := r.FormValue("term")
 	timeN := r.FormValue("time")
 	choice := r.FormValue("choice")
-	uniqueKey := r.FormValue("uniqueKey")
-
-	id = uniqueKey
 	
 	if choice == "Twitter"{
 
@@ -310,12 +243,18 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	}
 	
+	db, err := sql.Open("mysql", "root:mysql@tcp(mysql:3306)/resultDB") 
+	
+	db.Query("INSERT INTO resultsTable ( name, value) VALUES ('obama', 'obamaValue') ")
+	
+	db.Close()
+	
 }
 
 
 func main() {
 		
-	//defer conn.Close()	
+		
     http.HandleFunc("/start", handler)
 	
 	log.Fatal(http.ListenAndServe(":9090", nil))

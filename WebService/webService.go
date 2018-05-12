@@ -10,153 +10,51 @@ import (
     "net/http"
     "text/template"
     "net/url"
-    "time"
+     _ "github.com/go-sql-driver/mysql"
+    "database/sql"
+    //"strings"
 //    "io/ioutil"
 //    "encoding/json"
-//    "flag"
+    //"flag"
     //generate unique ID
 	//"github.com/segmentio/ksuid"
 	//"github.com/go-redis/redis"
 	//"github.com/gomodule/redigo/redis" 
 	
+	//"github.com/go-redis/cache"
+	
 	//"github.com/gorilla/mux"
 	//"reflect"
 	
-	rs "github.com/shallowtek/microAss1/RedisGateway/proto"
-	"golang.org/x/net/context"
-	"google.golang.org/grpc"
+	//rs "github.com/shallowtek/microAss1/RedisGateway/proto"
+//	"golang.org/x/net/context"
+//	"google.golang.org/grpc"
 //	"google.golang.org/grpc/credentials"
 //	"google.golang.org/grpc/testdata"
 )
 
 
-
 var(
 
-//	tls                = flag.Bool("tls", false, "Connection uses TLS if true, else plain TCP")
-//	caFile             = flag.String("ca_file", "", "The file containning the CA root cert file")
-//	serverHostOverride = flag.String("server_host_override", "x.test.youtube.com", "The server name use to verify the hostname returned by TLS handshake")
-	//rClient rs.RedisGatewayClient
-	//conn *grpc.ClientConn
-	id time.Time
+
 	//client rs.RedisGatewayClient
 	//conn redis.Conn
 	//rClient *redis.Client
-	term string
-	choice string
+//	term string
+//	newKey string
+//	newValue string
+	//newTerm string
+//	choice string
+	
 	//result *rs.KeyRequest
 )
 
 type Result struct{
 	
-	Key	string   `json:"key,omitempty"` 
+	Name  string   `json:"name,omitempty"` 
 	Value string   `json:"value,omitempty"` 	
 }
 
-
-//func genKsuid() string{
-//	id = ksuid.New().String()
-//	//fmt.Printf("github.com/segmentio/ksuid:  %s\n", id.String())
-//	return id
-//}
-
-//	flag.Parse()
-//	var opts []grpc.DialOption
-//	if *tls {
-//		if *caFile == "" {
-//			*caFile = testdata.Path("ca.pem")
-//		}
-//		creds, err := credentials.NewClientTLSFromFile(*caFile, *serverHostOverride)
-//		if err != nil {
-//			log.Fatalf("Failed to create TLS credentials %v", err)
-//		}
-//		opts = append(opts, grpc.WithTransportCredentials(creds))
-//	} else {
-//		opts = append(opts, grpc.WithInsecure())
-//	}
-
-func GetResult(w http.ResponseWriter, r *http.Request) {
-	// grpc.WithInsecure()	
-	conn, errOne := grpc.Dial("redis-gateway:10006", grpc.WithInsecure())
-	
-	defer conn.Close()
-	
-	rClient := rs.NewRedisGatewayClient(conn)
-	result , errTwo := rClient.GetData(context.Background(), &rs.KeyRequest{Key: "trump", Value: "trumpVal"})
-	   
-	fmt.Fprintf(w, "This is the Twitter Sentiment score: %s \n", result)
-	
-	fmt.Fprintf(w, "This is the Twitter Sentiment score: %v \n", errOne)
-	fmt.Fprintf(w, "This is the Twitter Sentiment score: %s \n", errTwo)	
-	
-}
-
-
-	//params := mux.Vars(r)
-    //key := params["key"]
-    
-//    rClient = redis.NewClient(&redis.Options{
-//		Addr:     "redis-master:6379",
-//		Password: "", // no password set
-//		DB:       0,  // use default DB
-//	})
-//	defer rClient.Close()
-//	//rClient.Set("trump", "trumpValue", 0).Err()
-//	
-//	
-//	
-//	val, _ := rClient.Get("trump").Result()
-	
-	//val, _ := redis.String(conn.Do("GET", "trump"))
-//	var netClient = &http.Client{
-//  		Timeout: time.Second * 10,
-//	}
-//	resp, _ := netClient.Get("http://redis-gateway:8081/getresult")
-//	defer resp.Body.Close()	
-		
-//	decoder := json.NewDecoder(resp.Body)
-//    var data Result
-//    decoder.Decode(&data)
-	//fmt.Println(string(responseData))
-	
-//	conn, _ := redis.Dial("tcp", "redis:6379") 
-//	defer conn.Close()
-//	//conn.Do("SET", "trump", "value")
-//	val, _ := redis.String(conn.Do("GET", "trump")) 
-
-	
-
-
-func SendResult(w http.ResponseWriter, r *http.Request){
-	
-	
-	
-//	 params := mux.Vars(r)
-//     key := params["Key"]
-//     value := params["Value"]
-//	r.ParseForm()
-//	
-//	key := string(r.FormValue("Key"))
-//	value := string(r.FormValue("Value"))
-	
-	
-//	rClient = redis.NewClient(&redis.Options{
-//		Addr:     "redis-master:6379",
-//		Password: "", // no password set
-//		DB:       0,  // use default DB
-//	})
-//	defer rClient.Close()
-//	
-//	rClient.Set("trump", "value", 0).Err()
-
-//	conn, _ := redis.Dial("tcp", "redis-master:6379") 
-//	defer conn.Close()
-//	
-//	conn.Do("SET", "trump", "value")
-	
-	
-	
-}
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	  
@@ -167,91 +65,105 @@ func handler(w http.ResponseWriter, r *http.Request) {
     } else {
         r.ParseForm()
 
-	term = string(r.FormValue("Search Term"))
+	term := string(r.FormValue("Search Term"))
     timeP := string(r.FormValue("Search Time"))
-	choice = string(r.FormValue("Choice"))
-	id := time.Now()
-	ts := id.String()
-	uniqueKey := choice + ts
+	choice := string(r.FormValue("Choice"))
 	
-	resp, _ := http.PostForm("http://compute-service:9090/start", url.Values{"term": {term}, "time": {timeP}, "choice": {choice}, "uniqueKey": {uniqueKey}})
-	defer resp.Body.Close()
 	
-//	conn, _ := redis.Dial("tcp", "redis:6379") 
-//	defer conn.Close()
-//	
-//	conn.Do("SET", "bbcTrump", "bbc")
-//	conn.Do("SET", "twitTrump", "twit")
-	
+	resp, _ := http.PostForm("http://compute-service:9090/start", url.Values{"term": {term}, "time": {timeP}, "choice": {choice}})
+	resp.Body.Close()
+		
 	//fmt.Println("Submission sent") 
 	http.Redirect(w, r, "/home", http.StatusSeeOther)
 
-	
-    }
-		
+    }		
 }
 
-//func handlerScore(w http.ResponseWriter, r *http.Request) {
-//	
-//	//params := mux.Vars(r)
-//	//res, _ := http.Get("http://redis-Gateway:8000/getresult/twitbush")
-//	
-//	client := http.Client{
-//		Timeout: time.Second * 2, // Maximum of 2 secs
+func GetResult(w http.ResponseWriter, r *http.Request) {
+	
+	//db, _ := sql.Open("mysql", "root:mysql@tcp(mysql:3306)/")
+//	if errOne != nil {
+//		panic(err.Error())  // Just for example purpose. You should use proper error handling instead of panic
 //	}
+	
+//	db.Exec("DROP DATABASE resultDB")
 //	
-//	url := "http://redis-Gateway:8000/getresult/twitBbc.json"
-//	req, err := http.NewRequest(http.MethodGet, url, nil)
+//	db.Exec("CREATE DATABASE resultDB")
+//   if err != nil {
+//       panic(err)
+//   }
+//    db.Exec("USE resultDB")
+//    
+//    db.Exec("CREATE TABLE resultsTable (name VARCHAR(32), value VARCHAR(32))")
+    
+//    INSERT INTO Customers (CustomerName, ContactName, Address, City, PostalCode, Country)
+//VALUES ('Cardinal', 'Tom B. Erichsen', 'Skagen 21', 'Stavanger', '4006', 'Norway');
+    
+//    _, err = db.Exec(`CREATE TABLE results (
+//  	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+//  	string_value VARCHAR(132),
+//  	int_value INT,
+//  	long_value INT,
+//  	double_value DOUBLE,
+//  	bool_value BOOL,
+//  	datetime_value DATETIME,
+//  	text_value TEXT)`)
+    
+     
+	
+	db, _ := sql.Open("mysql", "root:mysql@tcp(mysql:3306)/resultDB") 
+	
+	
+	//db.Query("INSERT INTO resultsTable ( name, value) VALUES ('hilary', 'hilaryValue') ")
+	
+	results, err := db.Query("SELECT name, value FROM resultsTable") 
+    
+    
+    for results.Next() {
+		var result Result
+		// for each row, scan the result into our tag composite object
+		results.Scan(&result.Name, &result.Value)
+		
+		fmt.Fprintf(w, "New Term: %v \n", result.Name)
+		
+		 
+		}
+	
+	fmt.Fprintf(w, "New Term: %v \n", err)
+	
+	db.Close()
+    
+//	err := db.Ping()
+//	if errTwo != nil {
+//    	//panic(err.Error()) // proper error handling instead of panic in your app
+//	}
+	
+	 // perform a db.Query insert 
+//    insert, _ := db.Query("INSERT INTO results VALUES ( 'trump', 'value' )")
+    
+    // if there is an error inserting, handle it
+//    if err != nil {
+//        panic(err.Error())
+//    }
+    
+//    results, _ := db.Query("SELECT * FROM results")
 //	if err != nil {
-//		log.Fatal(err)
+//		panic(err.Error()) // proper error handling instead of panic in your app
 //	}
-//
-//	res, getErr := client.Do(req)
-//	if getErr != nil {
-//		log.Fatal(getErr)
-//	}
-//	
-//	//defer res.Body.Close()
-//	
-//	body, readErr := ioutil.ReadAll(res.Body)
-//	if readErr != nil {
-//		log.Fatal(readErr)
-//	}
-//	
-//	result := Result{}
-//	errJson := json.Unmarshal(body, &result)
-//	if errJson != nil {
-//		fmt.Println(errJson)
-//		return
-//	}
-//	//fmt.Println(people1.Number)
-//	
-//  	fmt.Fprintf(w, "This is the Twitter Sentiment score: %s \n", result.Value)
-//
-//   
-//}
-
-
+	
+//	fmt.Fprintf(w, "HEADING:  \n")
+//	fmt.Fprintf(w, "New Term: %v \n", results)
+//	fmt.Fprintf(w, "New Term: %v \n", err)	
+		
+	
+}
 
 func main() {	
+	   
+    http.HandleFunc("/home", handler)
+    http.HandleFunc("/getresult", GetResult)
+    log.Fatal(http.ListenAndServe(":8080", nil))
 	
 	
-	//conn.Do("CONFIG SET", "DAEMONIZE", "YES")	
-	//defer conn.Close()
-//	router := mux.NewRouter()
-//	
-//	router.HandleFunc("/home", handler)
-//    router.HandleFunc("/score", handlerScore).Methods("GET")
-//    router.HandleFunc("/getresult", GetResult)
-////    router.HandleFunc("/getallresults", GetAllResults).Methods("GET")
-//    router.HandleFunc("/sendresult", SendResult)
-//    log.Fatal(http.ListenAndServe(":8080", router))
-  
-    
-	
-	http.HandleFunc("/home", handler)
-	http.HandleFunc("/getresult", GetResult)
- 	log.Fatal(http.ListenAndServe(":8080", nil))
-		
     	
 }
