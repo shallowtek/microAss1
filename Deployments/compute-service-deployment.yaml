@@ -6,16 +6,15 @@ metadata:
   name: compute-service
 spec:
   replicas: 3
-  strategy: {}
   template:
     metadata:
-      creationTimestamp: null
       labels:
         app: compute-service
     spec:
       containers:
       - image: gcr.io/microassignment-199111/compute-service:v1
+        imagePullPolicy: Always
         name: compute-service
         ports:
-        - containerPort: 9090
+        - containerPort: 8080
 

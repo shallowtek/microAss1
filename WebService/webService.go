@@ -70,8 +70,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	choice := string(r.FormValue("Choice"))
 	
 	
-	resp, _ := http.PostForm("http://compute-service:9090/start", url.Values{"term": {term}, "time": {timeP}, "choice": {choice}})
-	resp.Body.Close()
+	resp, _ := http.PostForm("http://compute-service:8080/start", url.Values{"term": {term}, "time": {timeP}, "choice": {choice}})
+	defer resp.Body.Close()
 		
 	//fmt.Println("Submission sent") 
 	http.Redirect(w, r, "/home", http.StatusSeeOther)
@@ -82,56 +82,38 @@ func handler(w http.ResponseWriter, r *http.Request) {
 func GetResult(w http.ResponseWriter, r *http.Request) {
 	
 	//db, _ := sql.Open("mysql", "root:mysql@tcp(mysql:3306)/")
-//	if errOne != nil {
-//		panic(err.Error())  // Just for example purpose. You should use proper error handling instead of panic
-//	}
 	
 //	db.Exec("DROP DATABASE resultDB")
 //	
 //	db.Exec("CREATE DATABASE resultDB")
-//   if err != nil {
-//       panic(err)
-//   }
+//
 //    db.Exec("USE resultDB")
 //    
 //    db.Exec("CREATE TABLE resultsTable (name VARCHAR(32), value VARCHAR(32))")
-    
-//    INSERT INTO Customers (CustomerName, ContactName, Address, City, PostalCode, Country)
-//VALUES ('Cardinal', 'Tom B. Erichsen', 'Skagen 21', 'Stavanger', '4006', 'Norway');
-    
-//    _, err = db.Exec(`CREATE TABLE results (
-//  	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-//  	string_value VARCHAR(132),
-//  	int_value INT,
-//  	long_value INT,
-//  	double_value DOUBLE,
-//  	bool_value BOOL,
-//  	datetime_value DATETIME,
-//  	text_value TEXT)`)
-    
+
      
 	
 	db, _ := sql.Open("mysql", "root:mysql@tcp(mysql:3306)/resultDB") 
-	
+	defer db.Close()
 	
 	//db.Query("INSERT INTO resultsTable ( name, value) VALUES ('hilary', 'hilaryValue') ")
 	
 	results, err := db.Query("SELECT name, value FROM resultsTable") 
     
-    
+    fmt.Fprintf(w, "Sentiment Analysis Search Results: \n",)
     for results.Next() {
 		var result Result
 		// for each row, scan the result into our tag composite object
 		results.Scan(&result.Name, &result.Value)
 		
-		fmt.Fprintf(w, "New Term: %v \n", result.Name)
+		fmt.Fprintf(w, "Term: %v	Result: %v\n", result.Name, result.Value)
 		
 		 
 		}
 	
 	fmt.Fprintf(w, "New Term: %v \n", err)
 	
-	db.Close()
+	
     
 //	err := db.Ping()
 //	if errTwo != nil {
@@ -159,7 +141,7 @@ func GetResult(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {	
-	   
+	  
     http.HandleFunc("/home", handler)
     http.HandleFunc("/getresult", GetResult)
     log.Fatal(http.ListenAndServe(":8080", nil))

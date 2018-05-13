@@ -8,8 +8,7 @@ spec:
   ports:
    - name: "8080"
      port: 8080
-     targetPort: 8080
   selector:
-    app: web-service
+    app: web-service    
   type: LoadBalancer
 

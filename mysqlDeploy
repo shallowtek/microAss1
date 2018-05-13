@@ -1,0 +1,9 @@
+#! /bin/bash
+kubectl delete services mysql
+
+kubectl delete deployments mysql
+
+
+kubectl create -f Deployments/mysql-deployment.yaml
+
+kubectl create -f Services/mysql-service.yaml

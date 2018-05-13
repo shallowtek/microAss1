@@ -1,0 +1,14 @@
+#! /bin/bash
+kubectl delete services twitter-service
+
+kubectl delete deployments twitter-service
+
+docker build -t twitter-service TwitterService
+
+docker tag twitter-service gcr.io/microassignment-199111/twitter-service:v1
+
+docker push gcr.io/microassignment-199111/twitter-service:v1
+
+kubectl create -f Deployments/twitter-service-deployment.yaml
+
+kubectl create -f Services/twitter-service-service.yaml

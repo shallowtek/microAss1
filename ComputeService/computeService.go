@@ -10,7 +10,7 @@ import (
 	"math"	
 	"strconv"
 	"net/http"
-	"net/url"
+	//"net/url"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -38,10 +38,9 @@ var (
 	caFile             = flag.String("ca_file", "", "The file containning the CA root cert file")
 	serverHostOverride = flag.String("server_host_override", "x.test.youtube.com", "The server name use to verify the hostname returned by TLS handshake")
 	//rClient *redis.Client
-	start time.Time
-	end time.Time
-	val string
-	bbcVal string
+	//start time.Time
+	endTwit time.Time
+	endBbc time.Time
 //	twitName string
 //	bbcName string	
 	//conn redis.Conn
@@ -58,7 +57,7 @@ func printFeatures(client ts.TwitterServiceClient, in *ts.TweetsRequest){
 	var elapsed float64
 	var rounded float64
 	average := 0.0
-
+	
 	model, err := sentiment.Restore()
 
 	if err != nil {
@@ -76,8 +75,8 @@ func printFeatures(client ts.TwitterServiceClient, in *ts.TweetsRequest){
 
 	for rounded < dur {
 
-		end = time.Now()
-		elapsed = end.Sub(start).Seconds()
+		endTwit := time.Now()
+		elapsed = endTwit.Sub(start).Seconds()
 		rounded = math.Floor(elapsed)
 
 		tweet, err := stream.Recv()
@@ -101,8 +100,10 @@ func printFeatures(client ts.TwitterServiceClient, in *ts.TweetsRequest){
 	
 	
 	convertAvg := strconv.FormatFloat(average, 'f', 6, 64)
-	resp, _ := http.PostForm("http://web-service:8080/sendresult/", url.Values{"key": {in.Name}, "value": {convertAvg}})
-	defer resp.Body.Close()
+	db, _ := sql.Open("mysql", "root:mysql@tcp(mysql:3306)/resultDB") 
+	defer db.Close()
+	
+	db.Query("INSERT INTO resultsTable ( name, value) VALUES ('" + in.Name + "', '" + convertAvg + "') ")
 	
 	
 	
@@ -134,8 +135,8 @@ func printNews(client bs.BbcServiceClient, in *bs.NewsRequest){
 
 	for rounded < dur {
 
-		end := time.Now()
-		elapsed = end.Sub(start).Seconds()
+		endBbc := time.Now()
+		elapsed = endBbc.Sub(start).Seconds()
 		rounded = math.Floor(elapsed)
 
 		news, err := stream.Recv()
@@ -156,7 +157,11 @@ func printNews(client bs.BbcServiceClient, in *bs.NewsRequest){
 				
 	}//end for loop
 	
+	convertAvg := strconv.FormatFloat(average, 'f', 6, 64)
+	db, _ := sql.Open("mysql", "root:mysql@tcp(mysql:3306)/resultDB") 
+	defer db.Close()
 	
+	db.Query("INSERT INTO resultsTable ( name, value) VALUES ('" + in.Name + "', '" + convertAvg + "') ")
 	
 	
 }
@@ -165,7 +170,7 @@ func printNews(client bs.BbcServiceClient, in *bs.NewsRequest){
 //is called. A value is returned and sent to the web service to be displayed.
 func startTwitter(term string, timeN string, opts []grpc.DialOption){
 
-	conn, err := grpc.Dial("twitter-service:10000")
+	conn, err := grpc.Dial("twitter-service:10000", opts...)
 	if err != nil {
 		log.Fatalf("fail to dial: %v", err)
 	}
@@ -198,7 +203,8 @@ func startBbc(term string, timeN string, opts []grpc.DialOption){
 		Name: term,
 		Minutes: timeN,
 		
-	})		
+	})	
+		
 	
 }
 
@@ -207,9 +213,7 @@ func startBbc(term string, timeN string, opts []grpc.DialOption){
 //This function handles the post request from web-service. It extracts the form data and determines which service to use (twitter or bbc)
 //Extracted data is the search term and how long you want to search for
 func handler(w http.ResponseWriter, r *http.Request) {
-	
-	
-	
+		
 	
 	flag.Parse()
 	
@@ -243,13 +247,11 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	}
 	
-	db, err := sql.Open("mysql", "root:mysql@tcp(mysql:3306)/resultDB") 
 	
-	db.Query("INSERT INTO resultsTable ( name, value) VALUES ('obama', 'obamaValue') ")
 	
-	db.Close()
-	
+
 }
+
 
 
 func main() {
@@ -257,7 +259,7 @@ func main() {
 		
     http.HandleFunc("/start", handler)
 	
-	log.Fatal(http.ListenAndServe(":9090", nil))
+	log.Fatal(http.ListenAndServe(":8080", nil))
 	
 	
 	
