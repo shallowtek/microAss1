@@ -70,7 +70,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	choice := string(r.FormValue("Choice"))
 	
 	
-	resp, _ := http.PostForm("http://compute-service:8080/start", url.Values{"term": {term}, "time": {timeP}, "choice": {choice}})
+	resp, _ := http.PostForm("http://compute-service:9090/start", url.Values{"term": {term}, "time": {timeP}, "choice": {choice}})
+	
 	defer resp.Body.Close()
 		
 	//fmt.Println("Submission sent") 

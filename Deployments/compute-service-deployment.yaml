@@ -16,5 +16,5 @@ spec:
         imagePullPolicy: Always
         name: compute-service
         ports:
-        - containerPort: 8080
+        - containerPort: 9090
 

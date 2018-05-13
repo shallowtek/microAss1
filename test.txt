@@ -1,0 +1,8 @@
+gcloud components install docker-credential-gcr
+
+create mysql secret:  kubectl create secret generic mysql --from-literal=password=YOUR_PASSWORD
+
+//force delete docker images docker rmi -f $(docker images | grep '^<none>' | awk '{print $3}')
+	//$ docker rm $(docker ps -aq)
+	//$ docker rmi $(docker images -q)
+	//docker system prune
