@@ -1,4 +1,4 @@
-//Matt Shallow 14-Mar-18
+//Matt Shallow 13-May-18
 package main
 
 import (
@@ -10,21 +10,16 @@ import (
 	"math"	
 	"strconv"
 	"net/http"
-	//"net/url"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/testdata"
+	//I put my proto files on github and they are used here so everything is on cloud not local machine.
 	ts "github.com/shallowtek/microAss1/TwitterService/proto"
-	bs "github.com/shallowtek/microAss1/BbcService/proto"
-	//rs "github.com/shallowtek/microAss1/RedisGateway/proto"
+	bs "github.com/shallowtek/microAss1/BbcService/proto"	
 	"github.com/cdipaolo/sentiment"
-	//"github.com/go-redis/redis"
-	//"github.com/gomodule/redigo/redis"
-	//"encoding/json"
-    //"github.com/gorilla/mux"
-	
-	
+	"github.com/gomodule/redigo/redis"
+    "github.com/gorilla/mux"
 	_ "github.com/go-sql-driver/mysql"
     "database/sql"
 	
@@ -43,6 +38,7 @@ var (
 	//conn redis.Conn
 )
 
+//struct used as part of redis database
 type Result struct{
 	
 	Name  string   `json:"name,omitempty"` 
@@ -50,7 +46,7 @@ type Result struct{
 }
 
 
-//This function is called by the startTwitter function. It contains the GRPC communication method to communicate with the
+//This function contains the GRPC communication method to communicate with the
 //twitter service. A stream is returned and sentiment calculated and stored on redis.
 func printFeatures(client ts.TwitterServiceClient, in *ts.TweetsRequest){
 	score := 0
@@ -67,7 +63,6 @@ func printFeatures(client ts.TwitterServiceClient, in *ts.TweetsRequest){
 
 	stream, _ := client.GetTweets(context.Background(), in)
 
-	
 
 	start := time.Now()
 	f,_ := strconv.ParseFloat(in.Minutes, 64)
@@ -87,7 +82,7 @@ func printFeatures(client ts.TwitterServiceClient, in *ts.TweetsRequest){
 		if err != nil {
 			log.Fatalf("error with stream")
 		}
-				
+		//Send to sentiment analysis tool and get result		
 		analysis := model.SentimentAnalysis(tweet.Text, sentiment.English)
 		score += int(analysis.Score)
 		count++
@@ -98,18 +93,26 @@ func printFeatures(client ts.TwitterServiceClient, in *ts.TweetsRequest){
 		
 	}//end for loop	
 	
-	
+	//this is where the mysql and redis databases are called and the results are stored
 	convertAvg := strconv.FormatFloat(average, 'f', 6, 64)
+	
 	
 	db, _ := sql.Open("mysql", "root:mysql@tcp(mysql:3306)/resultDB") 
 	defer db.Close()
 	
-	db.Query("INSERT INTO resultsTable ( name, value) VALUES ('" + in.Name + "', '" + convertAvg + "') ")
+	db.Query("INSERT INTO resultsTable ( name, value) VALUES ('" + in.Name + "-Twitter" + "', '" + convertAvg + "') ")
+	
+	
+	c, _ := redis.Dial("tcp", "redis:6379")
+	defer c.Close()
+	c.Do("SET", in.Name + "-Twitter", convertAvg )
+	c.Do("EXPIRE", in.Name + "-Twitter", 600)
 	
 	
 	
 }//end function
-//This function is called by the startBbc function. It contains the GRPC communication method to communicate with the
+
+//This function contains the GRPC communication method to communicate with the
 //bbc service. A stream is returned and sentiment calculated and stored on redis.
 func printNews(client bs.BbcServiceClient, in *bs.NewsRequest){
 	score := 0
@@ -133,6 +136,7 @@ func printNews(client bs.BbcServiceClient, in *bs.NewsRequest){
 	f,_ := strconv.ParseFloat(in.Minutes, 64)
 	dur := f * 60
 
+	//for loop used to determine how much time has passed
 	for rounded < dur {
 
 		endBbc = time.Now()
@@ -152,71 +156,37 @@ func printNews(client bs.BbcServiceClient, in *bs.NewsRequest){
 		average = (float64)(score)/(float64)(count)	
 		
 		fmt.Printf("SCORE %d %d %6.1f \n",score, count, average)
-
-		
 				
 	}//end for loop
 	
+	//converts the average into string format
 	convertAvg := strconv.FormatFloat(average, 'f', 6, 64)
+	//this is where the mysql and redis databases are called and the results are stored
 	db, _ := sql.Open("mysql", "root:mysql@tcp(mysql:3306)/resultDB") 
 	defer db.Close()
 	
-	db.Query("INSERT INTO resultsTable ( name, value) VALUES ('" + in.Name + "', '" + convertAvg + "') ")
+	db.Query("INSERT INTO resultsTable ( name, value) VALUES ('" + in.Name + "-BBC" + "', '" + convertAvg + "') ")
 	
-	
+	c, _ := redis.Dial("tcp", "redis:6379")
+    defer c.Close()
+    c.Do("SET", in.Name + "-Bbc", convertAvg )
+    c.Do("EXPIRE", in.Name + "-Bbc", 600)
 }
 
-//This function starts the twitter stream using the form data. A connection is made to Twitter service and the print features function 
-//is called. A value is returned and sent to the web service to be displayed.
-//func startTwitter(term string, timeN string, opts []grpc.DialOption){
-//
-//	conn, err := grpc.Dial("twitter-service:10000", opts...)
-//	if err != nil {
-//		log.Fatalf("fail to dial: %v", err)
-//	}
-//	defer conn.Close()
-//
-//	client := ts.NewTwitterServiceClient(conn)
-//
-//		printFeatures(client, &ts.TweetsRequest{
-//		Name: term,
-//		Minutes: timeN,
-//		
-//	})
-//
-//	
-//}
-
-//This function starts the bbc stream using the form data. A connection is made to bbc service and the print news function 
-//is called. A value is returned and sent to the web service to be displayed.
-//func startBbc(term string, timeN string, opts []grpc.DialOption){
-//
-//	conn, err := grpc.Dial("bbc-service:10005", opts... )
-//	if err != nil {
-//		log.Fatalf("fail to dial: %v", err)
-//	}
-//	defer conn.Close()
-//
-//	clientBbc := bs.NewBbcServiceClient(conn)
-//
-//		printNews(clientBbc, &bs.NewsRequest{
-//		Name: term,
-//		Minutes: timeN,
-//		
-//	})	
-//		
-//	
-//}
 
 
 
 //This function handles the post request from web-service. It extracts the form data and determines which service to use (twitter or bbc)
 //Extracted data is the search term and how long you want to search for
-func handler(w http.ResponseWriter, r *http.Request) {
-		
+func startHandler(w http.ResponseWriter, r *http.Request) {
+	//using mux to extract values from url
+	vars := mux.Vars(r)
+	term := vars["term"] //term
+	timeP := vars["timeP"] //how long to run stream
+	choice := vars["choice"] //bbc or twitter
 	
 	flag.Parse()
-	
+	//Grpc needs to use safe dialing options
 	var opts []grpc.DialOption
 	if *tls {
 		if *caFile == "" {
@@ -231,115 +201,46 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		opts = append(opts, grpc.WithInsecure())
 	}
     
-        r.ParseForm()
-        
-	term := r.FormValue("term")
-	timeN := r.FormValue("time")
-	choice := r.FormValue("choice")
-	
-	if choice == "Twitter"{
 
+	//If choice is twitter then connect to twitter-service
+	if choice == "Twitter"{
 	
-	conn, _ := grpc.Dial("twitter-service:10000", opts...)
-	
+	conn, _ := grpc.Dial("twitter-service:10000", opts...)	
 	defer conn.Close()
 
 	client := ts.NewTwitterServiceClient(conn)
 
 		printFeatures(client, &ts.TweetsRequest{
 		Name: term,
-		Minutes: timeN,
+		Minutes: timeP,
 		
 	})
 	
+	//If choice is bbc then connect to bbc-service
 	}else if choice == "Bbc"{
 
-	conn, _ := grpc.Dial("bbc-service:10005", opts... )
-	
+	conn, _ := grpc.Dial("bbc-service:10005", opts... )	
 	defer conn.Close()
 
 	clientBbc := bs.NewBbcServiceClient(conn)
 
 		printNews(clientBbc, &bs.NewsRequest{
 		Name: term,
-		Minutes: timeN,
+		Minutes: timeP,
 		
 	})	
 
-	}
+	}//end if statements
 	
-}
-
-func test(w http.ResponseWriter, r *http.Request) {
-	flag.Parse()
-	
-	var opts []grpc.DialOption
-	if *tls {
-		if *caFile == "" {
-			*caFile = testdata.Path("ca.pem")
-		}
-		creds, err := credentials.NewClientTLSFromFile(*caFile, *serverHostOverride)
-		if err != nil {
-			log.Fatalf("Failed to create TLS credentials %v", err)
-		}
-		opts = append(opts, grpc.WithTransportCredentials(creds))
-	} else {
-		opts = append(opts, grpc.WithInsecure())
-	}
-	
-	conn, err := grpc.Dial("twitter-service:10000", opts...)
-	
-	defer conn.Close()
-
-	client := ts.NewTwitterServiceClient(conn)
-
-		printFeatures(client, &ts.TweetsRequest{
-		Name: "trump",
-		Minutes: "0.1",
-		
-	})
-	
-	fmt.Fprintf(w, "TEST PAGE \n")	
-	fmt.Fprintf(w, "New Term: %v \n", err)	
-	
-	
-}
-
-
-func check(w http.ResponseWriter, r *http.Request) {
-	
-	db, _ := sql.Open("mysql", "root:mysql@tcp(mysql:3306)/resultDB") 
-	defer db.Close()
-	
-	//db.Query("INSERT INTO resultsTable ( name, value) VALUES ('hilary', 'hilaryValue') ")
-	
-	results, err := db.Query("SELECT name, value FROM resultsTable") 
-    
-    fmt.Fprintf(w, "Sentiment Analysis Search Results: \n",)
-    for results.Next() {
-		var result Result
-		// for each row, scan the result into our tag composite object
-		results.Scan(&result.Name, &result.Value)
-		
-		fmt.Fprintf(w, "Term: %v	Result: %v\n", result.Name, result.Value)
-			 
-		}
-	
-	fmt.Fprintf(w, "New Term: %v \n", err)
-	
-	
-}
+}//end startHandler
 
 
 func main() {
-		
-		
-    http.HandleFunc("/start", handler)
-	http.HandleFunc("/test", test)
-	
-	http.HandleFunc("/check", check)
-	log.Fatal(http.ListenAndServe(":9090", nil))
-	
-	
+				
+	//Using mux features to simplify extracting GET request variables
+	r := mux.NewRouter()
+	r.HandleFunc("/start/{term}/{timeP}/{choice}", startHandler).Methods("GET")
+
+	http.ListenAndServe(":9090", r)
 	
 }

@@ -1,16 +1,9 @@
 #! /bin/bash
 kubectl delete services redis
 
-#kubectl delete services redis-slave
-
 kubectl delete deployments redis
-
-#kubectl delete deployments redis-slave
 
 kubectl create -f Deployments/redis-master-deployment.yaml
 
-#kubectl create -f Deployments/redis-slave-deployment.yaml
-
 kubectl create -f Services/redis-master-service.yaml
 
-#kubectl create -f Services/redis-slave-service.yaml
