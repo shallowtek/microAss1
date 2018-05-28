@@ -1,8 +1,15 @@
 # microAss1
-Four services: Three custom web-service, twitter-service, compute-service
 
-One storage service: Redis
+This tool is part of a microservices assigment for a degree in software developmet.
 
-26-April-18
+Six microservices:
 
-Add cookies to web-service
+web-service
+compute-service
+redis-service
+mysql-service
+twitter-service
+bbc-service
+
+
+
